@@ -2,11 +2,7 @@
 
 #include <thread>
 #include <cv_bridge/cv_bridge.h>
-#ifdef USE_ROS2
 #include <rclcpp/rclcpp.hpp>
-#else
-#include <ros/ros.h>
-#endif
 
 #include "interface/interface.h"
 #include "math_common/nano_ekf.h"
@@ -15,11 +11,7 @@
 namespace mvins {
 
 RosTime CvtToRosTime(const uint64_t time_ns) {
-#ifdef USE_ROS2
     return RosTime(time_ns);
-#else
-    return RosTime(common::NanoSecondsToSeconds(time_ns));
-#endif
 }
 
 void StartRosLifeCircle(const int sleep_time_ms,
@@ -61,18 +53,12 @@ void StartRosLifeCircle(const int sleep_time_ms,
         rosbag_parser->Start();       
     }
 
-#ifdef USE_ROS2
     using rclcpp::executors::MultiThreadedExecutor;
     MultiThreadedExecutor executor(rclcpp::ExecutorOptions(), 6/*number_of_threads*/);
     executor.add_node(node_handler_ptr);
     std::thread spinner(std::bind(&MultiThreadedExecutor::spin, &executor));
     spinner.detach();
     rclcpp::Rate loop_rate(1000 / sleep_time_ms);
-#else
-    ros::AsyncSpinner spinner(4);
-    ros::Rate loop_rate(1000 / sleep_time_ms);
-    spinner.start();
-#endif
 
 #ifdef PUB_DEBUG_INFO
     // The size of trajectory queue for visualization.
@@ -110,11 +96,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
     const std::string map_frame = "map";
     const std::string base_link_frame = "base_link";
 
-#ifdef USE_ROS2
     while (rclcpp::ok()) {
-#else
-    while (ros::ok()) {
-#endif
         if (config->online) {
             mvins::SLAM_STATUS current_slam_status = interface.GetSlamStatus();
             if (current_slam_status == SLAM_STATUS::RUNNING && !subscribers_inited) {
@@ -156,13 +138,8 @@ void StartRosLifeCircle(const int sleep_time_ms,
             std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
             continue;
         }
-#ifdef USE_ROS2
         RosTime t_now = rclcpp::Clock().now();
         const double t_now_s = t_now.seconds();
-#else
-        RosTime t_now = ros::Time::now();
-        const double t_now_s = ros::Time::now().toSec();
-#endif
         const bool pub_map = (t_now_s - last_pub_map_time_s) > map_pub_time_diff_s;
 
         aslam::Transformation T_OtoC; 
@@ -225,11 +202,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
             this_pose_cam_stamped.pose.position = p_map_cam_msg;
 
             // TODO: Set covariance.
-#ifdef USE_ROS2
             if (topic_publishers.pose_cam_pub_->get_subscription_count() > 0u) {
-#else
-            if (topic_publishers.pose_cam_pub_->getNumSubscribers() > 0) {
-#endif
                 topic_publishers.pose_cam_pub_->publish(this_pose_cam_stamped);
                     }
 
@@ -238,20 +211,12 @@ void StartRosLifeCircle(const int sleep_time_ms,
             if (interface.GetShowImage(&show_imgs)) {
                 ImageMsgPtr feature_tracking_msg = cv_bridge::CvImage(
                             HeaderMsg(), "bgr8", *(show_imgs[0])).toImageMsg();
-#ifdef USE_ROS2
                 if (topic_publishers.feature_tracking_pub_->get_subscription_count() > 0u) {
-#else
-                if (topic_publishers.feature_tracking_pub_->getNumSubscribers() > 0) {
-#endif
                     topic_publishers.feature_tracking_pub_->publish(*feature_tracking_msg);
                 }
                 ImageMsgPtr feature_depth_msg = cv_bridge::CvImage(
                             HeaderMsg(), "bgr8", *(show_imgs[1])).toImageMsg();
-#ifdef USE_ROS2
                 if (topic_publishers.feature_depth_pub_->get_subscription_count() > 0u) {
-#else
-                if (topic_publishers.feature_depth_pub_->getNumSubscribers() > 0) {
-#endif
                     topic_publishers.feature_depth_pub_->publish(*feature_depth_msg);
                 }
             }
@@ -292,11 +257,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
                     memcpy(&live_cloud.data[idx * live_cloud.point_step + 4], &y, sizeof(float));
                     memcpy(&live_cloud.data[idx * live_cloud.point_step + 8], &z, sizeof(float));
                 }
-#ifdef USE_ROS2
                 if (topic_publishers.live_cloud_pub_->get_subscription_count() > 0u) {
-#else
-                if (topic_publishers.live_cloud_pub_->getNumSubscribers() > 0) {
-#endif
                     topic_publishers.live_cloud_pub_->publish(live_cloud);
                 }
 
@@ -319,11 +280,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
                 obs_msg.type = MarkerMsg::LINE_LIST;
                 obs_msg.scale.x = obs_msg.scale.y = obs_msg.scale.z = 0.01;
                 obs_msg.color.b = obs_msg.color.a = 1.0;
-#ifdef USE_ROS2
                 if (topic_publishers.obs_pub_->get_subscription_count() > 0u) {
-#else
-                if (topic_publishers.obs_pub_->getNumSubscribers() > 0) {
-#endif
                     topic_publishers.obs_pub_->publish(obs_msg);
                 }
             }
@@ -348,11 +305,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
                 obs_msg.type = MarkerMsg::LINE_LIST;
                 obs_msg.scale.x = obs_msg.scale.y = obs_msg.scale.z = 0.01;
                 obs_msg.color.r = obs_msg.color.g = obs_msg.color.a = 1.0;
-#ifdef USE_ROS2
                 if (topic_publishers.reloc_obs_pub_->get_subscription_count() > 0u) {
-#else
-                if (topic_publishers.reloc_obs_pub_->getNumSubscribers() > 0) {
-#endif
                     topic_publishers.reloc_obs_pub_->publish(obs_msg);
                 }
             }
@@ -391,11 +344,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
 
                     gt_path.header.stamp = t_now;
                     gt_path.header.frame_id = map_frame;
-#ifdef USE_ROS2
                     if (topic_publishers.gt_path_pub_->get_subscription_count() > 0u) {
-#else
-                    if (topic_publishers.gt_path_pub_->getNumSubscribers() > 0) {
-#endif
                         topic_publishers.gt_path_pub_->publish(gt_path); 
                     }
                 }
@@ -432,11 +381,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
         pose_local.header.frame_id = base_link_frame;
         pose_local.pose.pose.orientation = q_local_base_msg;
         pose_local.pose.pose.position = p_local_base_msg;
-#ifdef USE_ROS2
         if (topic_publishers.pose_local_pub_->get_subscription_count() > 0u) {
-#else
-        if (topic_publishers.pose_local_pub_->getNumSubscribers() > 0) {
-#endif
             topic_publishers.pose_local_pub_->publish(pose_local);
         }
 
@@ -470,11 +415,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
         pose_map.header.frame_id = map_frame;
         pose_map.pose.orientation = q_map_base_msg;
         pose_map.pose.position = p_map_base_msg;
-#ifdef USE_ROS2
         if (topic_publishers.pose_pub_->get_subscription_count() > 0u) {
-#else
-        if (topic_publishers.pose_pub_->getNumSubscribers() > 0) {
-#endif
             topic_publishers.pose_pub_->publish(pose_map);
         }
 
@@ -514,11 +455,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
 
         path.header.stamp = t_now;
         path.header.frame_id = map_frame;
-#ifdef USE_ROS2
         if (topic_publishers.path_pub_->get_subscription_count() > 0u) {
-#else
-        if (topic_publishers.path_pub_->getNumSubscribers() > 0) {
-#endif
             topic_publishers.path_pub_->publish(path);
         }
 
@@ -545,11 +482,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
             edge_msg.type = MarkerMsg::LINE_LIST;
             edge_msg.scale.x = edge_msg.scale.y = edge_msg.scale.z = 0.01;
             edge_msg.color.r = edge_msg.color.g = edge_msg.color.a = 1.0;
-#ifdef USE_ROS2
             if (topic_publishers.edge_pub_->get_subscription_count() > 0u) {
-#else
-            if (topic_publishers.edge_pub_->getNumSubscribers() > 0) {
-#endif
                 topic_publishers.edge_pub_->publish(edge_msg);
             }
         }
@@ -570,11 +503,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
                 this_pose.pose.position.z = pg_poses[i](2, 3);
                 path.poses.push_back(this_pose);
             }
-#ifdef USE_ROS2
             if (topic_publishers.path_pub_->get_subscription_count() > 0u) {
-#else
-            if (topic_publishers.path_pub_->getNumSubscribers() > 0) {
-#endif
                 topic_publishers.path_pub_->publish(path);
             }
         }
@@ -598,11 +527,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
             this_pose_base_stamped.pose.orientation = q_map_base_msg;
             this_pose_base_stamped.pose.position = p_map_base_msg;
             // TODO: Set covariance.
-#ifdef USE_ROS2
             if (topic_publishers.pose_loop_pub_->get_subscription_count() > 0u) {
-#else
-            if (topic_publishers.pose_loop_pub_->getNumSubscribers() > 0) {
-#endif
                 topic_publishers.pose_loop_pub_->publish(this_pose_base_stamped);
             }
         }
@@ -644,11 +569,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
                 memcpy(&live_scan.data[idx * live_scan.point_step + 4], &y, sizeof(float));
                 memcpy(&live_scan.data[idx * live_scan.point_step + 8], &z, sizeof(float));
             }
-#ifdef USE_ROS2
             if (topic_publishers.scan_cloud_pub_->get_subscription_count() > 0u) {
-#else
-            if (topic_publishers.scan_cloud_pub_->getNumSubscribers() > 0) {
-#endif
                 topic_publishers.scan_cloud_pub_->publish(live_scan);
             }
         }
@@ -690,11 +611,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
                         occ_msg.data[idx++] = map.at<uchar>(i,j);
                     }
                 }
-#ifdef USE_ROS2
                 if (topic_publishers.map_pub_->get_subscription_count() > 0u) {
-#else
-                if (topic_publishers.map_pub_->getNumSubscribers() > 0) {
-#endif
                     topic_publishers.map_pub_->publish(occ_msg);
                 }
             }
@@ -734,11 +651,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
                     memcpy(&pc.data[idx * pc.point_step + 4], &y, sizeof(float));
                     memcpy(&pc.data[idx * pc.point_step + 8], &z, sizeof(float));
                 }
-    #ifdef USE_ROS2
                 if (topic_publishers.map_cloud_pub_->get_subscription_count() > 0u) {
-    #else
-                if (topic_publishers.map_cloud_pub_->getNumSubscribers() > 0) {
-    #endif
                     topic_publishers.map_cloud_pub_->publish(pc);   
                 }
             }
@@ -749,11 +662,7 @@ void StartRosLifeCircle(const int sleep_time_ms,
         ++loop_count; 
     }
 
-#ifdef USE_ROS2
     rclcpp::shutdown();
-#else
-    spinner.stop();
-#endif
 
     mvins::ShutdownPublishers(&topic_publishers);
     if (config->online) {

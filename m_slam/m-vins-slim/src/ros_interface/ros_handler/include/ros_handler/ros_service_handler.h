@@ -7,17 +7,11 @@
 namespace mvins {
 
 struct ServiceOptions {
-#ifdef USE_ROS2
     rclcpp::CallbackGroup::SharedPtr slam_interactive_callback_group_;
-#endif
 };
 
 struct Services {
-#ifdef USE_ROS2
     rclcpp::Service<mirobot_msgs::srv::SlamService>::SharedPtr slam_interactive_service_;
-#else
-    std::shared_ptr<ros::ServiceServer> slam_interactive_service_;
-#endif
 };
 
 void InitializeServiceOptions(

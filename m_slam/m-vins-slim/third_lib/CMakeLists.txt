@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0048 NEW)
 
 project(third_lib)
@@ -43,13 +43,11 @@ else()
         )
 endif()
 
-if (USE_ROS2_API)
-        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp/${CMAKE_SYSTEM_PROCESSOR}
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp/${CMAKE_SYSTEM_PROCESSOR}
+        DESTINATION lib/m_vins
+)
+if (USE_CNN_FEATURE)
+        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rknn/${CMAKE_SYSTEM_PROCESSOR}
                 DESTINATION lib/m_vins
         )
-        if (USE_CNN_FEATURE)
-                install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rknn/${CMAKE_SYSTEM_PROCESSOR}
-                        DESTINATION lib/m_vins
-                )
-        endif()
 endif()

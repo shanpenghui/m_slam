@@ -18,8 +18,6 @@ add_library(nabo ALIAS nabo_${CMAKE_SYSTEM_PROCESSOR})
 set_target_properties(nabo_${CMAKE_SYSTEM_PROCESSOR} PROPERTIES
         VERSION ${CMAKE_PROJECT_VERSION})
 
-if(USE_ROS2_API)
-        install(TARGETS nabo_${CMAKE_SYSTEM_PROCESSOR}
-          DESTINATION lib/m_vins
-        )
-endif()
+install(TARGETS nabo_${CMAKE_SYSTEM_PROCESSOR}
+  DESTINATION lib/m_vins
+)

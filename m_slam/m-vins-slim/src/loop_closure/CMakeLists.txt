@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0048 NEW)
 
 project (loop_closure)
@@ -45,8 +45,6 @@ target_link_libraries(loop_closure_${CMAKE_SYSTEM_PROCESSOR}
         vins_common
         )
 
-if(USE_ROS2_API)
-        install(TARGETS loop_closure_${CMAKE_SYSTEM_PROCESSOR}
-          DESTINATION lib/m_vins
-        )
-endif()
+    install(TARGETS loop_closure_${CMAKE_SYSTEM_PROCESSOR}
+      DESTINATION lib/m_vins
+    )

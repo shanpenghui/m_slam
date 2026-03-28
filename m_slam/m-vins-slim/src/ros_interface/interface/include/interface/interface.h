@@ -8,7 +8,6 @@
 #include <mutex>
 #include <string>
 #include <vector>
-#ifdef USE_ROS2
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -31,32 +30,6 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <visualization_msgs/msg/marker.hpp>
 #include <mirobot_msgs/srv/slam_service.hpp>
-#else
-#include <ros/ros.h>
-#include <ros/node_handle.h>
-#include <ros/spinner.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/PointStamped.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <geometry_msgs/Point32.h>
-#include <nav_msgs/MapMetaData.h>
-#include <nav_msgs/Odometry.h>
-#include <nav_msgs/OccupancyGrid.h>
-#include <nav_msgs/Path.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/LaserScan.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <sensor_msgs/PointCloud.h>
-#include <std_msgs/Bool.h>
-#include <std_msgs/String.h>
-#include <std_msgs/Int8.h>
-#include <std_msgs/UInt64.h>
-#include <tf/transform_broadcaster.h>
-#include <visualization_msgs/Marker.h>
-#include <mirobot_msgs/slam_service.h>
-#endif
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
 
@@ -73,7 +46,6 @@ constexpr char kConfigRelocFileName[] = "config_reloc.yaml";
 constexpr char kOccupancyMapFileName[] = "map.pgm";
 constexpr char kOccupancyMapYamlFileName[] = "map.yaml";
 
-#ifdef USE_ROS2
 typedef mirobot_msgs::srv::SlamService::Request ServiceRequest;
 typedef ServiceRequest::SharedPtr ServiceRequestPtr;
 typedef mirobot_msgs::srv::SlamService::Response ServiceResponse;
@@ -114,46 +86,6 @@ typedef geometry_msgs::msg::TransformStamped TransformStampedMsg;
 typedef std_msgs::msg::Header HeaderMsg;
 typedef rclcpp::Node NodeHandle;
 typedef rclcpp::Time RosTime;
-#else 
-typedef mirobot_msgs::slam_service::Request ServiceRequest;
-typedef mirobot_msgs::slam_service::Response ServiceResponse;
-typedef sensor_msgs::LaserScan LaserScanMsg;
-typedef sensor_msgs::LaserScanConstPtr LaserScanMsgPtr;
-typedef sensor_msgs::Image ImageMsg;
-typedef sensor_msgs::ImageConstPtr ImageMsgPtr;
-typedef std_msgs::Int8 Int8Msg;
-typedef std_msgs::Int8ConstPtr Int8MsgPtr;
-typedef nav_msgs::Odometry OdometryMsg;
-typedef nav_msgs::OdometryConstPtr OdometryMsgPtr;
-typedef sensor_msgs::Imu ImuMsg;
-typedef sensor_msgs::ImuConstPtr ImuMsgPtr;
-typedef sensor_msgs::PointCloud2 PointCloudMsg;
-typedef sensor_msgs::PointCloud2ConstPtr PointCloudMsgPtr;
-typedef sensor_msgs::PointField PointFieldMsg;
-typedef visualization_msgs::Marker MarkerMsg;
-typedef visualization_msgs::MarkerConstPtr MarkerMsgPtr;
-typedef nav_msgs::Path PathMsg;
-typedef nav_msgs::PathConstPtr PathMsgPtr;
-typedef geometry_msgs::PoseStamped PoseStampedMsg;
-typedef geometry_msgs::PoseStampedConstPtr PoseStampedMsgPtr;
-typedef geometry_msgs::PoseWithCovarianceStamped PoseWithCovarianceStampedMsg;
-typedef geometry_msgs::PoseWithCovarianceStampedConstPtr PoseWithCovarianceStampedMsgPtr;
-typedef nav_msgs::OccupancyGrid OccupancyGridMsg;
-typedef nav_msgs::OccupancyGridConstPtr OccupancyGridMsgPtr;
-typedef std_msgs::UInt64 UInt64Msg;
-typedef std_msgs::UInt64ConstPtr UInt64MsgPtr;
-typedef geometry_msgs::PointStamped PointStampedMsg;
-typedef geometry_msgs::PointStampedConstPtr PointStampedMsgPtr;
-typedef geometry_msgs::Point32 Point32Msg;
-typedef nav_msgs::MapMetaData MapMetaDataMsg;
-typedef geometry_msgs::Point PointMsg;
-typedef geometry_msgs::Quaternion QuaternionMsg;
-typedef geometry_msgs::Vector3 Vector3Msg;
-typedef geometry_msgs::TransformStamped TransformStampedMsg;
-typedef std_msgs::Header HeaderMsg;
-typedef ros::NodeHandle NodeHandle;
-typedef ros::Time RosTime;
-#endif
 
 namespace mvins {
 
@@ -183,7 +115,6 @@ public:
     void AddEndSignal();
 
     //! Add camera data from ROS messages.
-#ifdef  USE_ROS2
     void FillImageMsg(
         const ImageMsgPtr msg);
     void FillImageMsgImpl(
@@ -192,16 +123,6 @@ public:
         const ImageMsgPtr msg);
     void FillDepthMsgImpl(
         const ImageMsgPtr msg);
-#else
-    void FillImageMsg(
-        const ImageMsgPtr& msg);
-    void FillImageMsgImpl(
-        const ImageMsgPtr& msg);
-    void FillDepthMsg(
-        const ImageMsgPtr& msg);
-    void FillDepthMsgImpl(
-        const ImageMsgPtr& msg);
-#endif
     //! Scan related.
     //! Add scan message to handler.
     void FillScanMsg(
@@ -228,13 +149,8 @@ public:
     void FillResetPoseMsg(
         const PoseWithCovarianceStampedMsgPtr reset_pose);
         
-#ifdef  USE_ROS2
     bool SlamServiceCall(ServiceRequestPtr req,
                          ServiceResponsePtr res);
-#else
-    bool SlamServiceCall(ServiceRequest& req,
-                         ServiceResponse& res);
-#endif
 
     //! Status checker.
     bool IsNewPose() const;

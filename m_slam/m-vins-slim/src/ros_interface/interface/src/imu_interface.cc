@@ -12,16 +12,12 @@ void Interface::FillImuMsg(const ImuMsgPtr imu) {
     }
     common::ImuData imu_meas;
 
-#ifdef USE_ROS2
     RosTime t_msg = imu->header.stamp;
     if (t_msg.nanoseconds() < 0l) {
         LOG(ERROR) << "Received a negative timestamp in imu message.";
         return;
     }
     imu_meas.timestamp_ns = t_msg.nanoseconds();
-#else
-    imu_meas.timestamp_ns = imu->header.stamp.toNSec();
-#endif
     imu_meas.acc << imu->linear_acceleration.x,
                     imu->linear_acceleration.y,
                     imu->linear_acceleration.z;

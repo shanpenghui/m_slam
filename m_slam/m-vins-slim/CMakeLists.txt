@@ -23,10 +23,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(USE_ROS2_API "Use ROS2 API instead ROS1" TRUE)
-if(USE_ROS2_API)
-    add_definitions(-DUSE_ROS2)
-endif()
 
 # Set build type.
 set(CMAKE_BUILD_TYPE "Debug")
@@ -87,36 +83,20 @@ if(USE_CNN_FEATURE)
     add_definitions(-DUSE_CNN_FEATURE)
 endif()
 
-if(USE_ROS2_API)
-  # Find ROS2 dependencies.
-  find_package(ament_cmake REQUIRED)
-  find_package(rcl REQUIRED)
-  find_package(rclcpp REQUIRED)
-  find_package(rclcpp_components REQUIRED)
-  find_package(sensor_msgs REQUIRED)
-  find_package(geometry_msgs REQUIRED)
-  find_package(nav_msgs REQUIRED)
-  find_package(std_msgs REQUIRED)
-  find_package(visualization_msgs REQUIRED)
-  find_package(cv_bridge REQUIRED)
-  find_package(rosbag2_cpp REQUIRED)
-  find_package(tf2_ros REQUIRED)
-  find_package(mirobot_msgs REQUIRED)
-else()
-  find_package(catkin REQUIRED COMPONENTS
-    cv_bridge
-    image_transport
-    rosbag
-    roscpp
-    roslib
-    std_msgs
-    tf
-    mirobot_msgs)
-  message(STATUS catkin_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
-  message(STATUS catkin_LIBRARIES ${catkin_LIBRARIES})
-
-  catkin_package()
-endif()
+# Find ROS2 dependencies.
+find_package(ament_cmake REQUIRED)
+find_package(rcl REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(rosbag2_cpp REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(mirobot_msgs REQUIRED)
 
 # Third party libraries to link.
 add_subdirectory(third_lib)
@@ -158,11 +138,6 @@ link_libraries(
         ${THIRD_LIB_LIBRARIES}
 )
 
-if(NOT USE_ROS2_API)
-  include_directories(
-        ${catkin_INCLUDE_DIRS})
-  link_libraries(${catkin_LIBRARIES})
-endif()
 
 add_subdirectory(src/vins_common)
 
@@ -176,47 +151,36 @@ add_subdirectory(src/vins_handler)
 
 add_subdirectory(src/ros_interface)
 
-if(USE_ROS2_API)
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/slam_online_log_clear.sh
-    DESTINATION scripts/m_vins/
-  )
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/slam_online_machine.sh
-    DESTINATION scripts/${PROJECT_NAME}
-  )
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/slam_offline.sh
-    DESTINATION scripts/${PROJECT_NAME}
-  )
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/kill_all.sh
-    DESTINATION scripts/${PROJECT_NAME}
-  )
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/rviz/m-vins.rviz
-    DESTINATION share/${PROJECT_NAME}/rviz
-  )
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/inverted_multi_index_quantizer_freak.dat
-    DESTINATION assets/${PROJECT_NAME}
-  )
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/inverted_multi_index_quantizer_superpoint.dat
-    DESTINATION assets/${PROJECT_NAME}
-  )
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/superpoint_v1_fp16.rknn
-    DESTINATION assets/${PROJECT_NAME}
-  )
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/slam_online_log_clear.sh
+  DESTINATION scripts/m_vins/
+)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/slam_online_machine.sh
+  DESTINATION scripts/${PROJECT_NAME}
+)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/slam_offline.sh
+  DESTINATION scripts/${PROJECT_NAME}
+)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/kill_all.sh
+  DESTINATION scripts/${PROJECT_NAME}
+)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/rviz/m-vins.rviz
+  DESTINATION share/${PROJECT_NAME}/rviz
+)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/inverted_multi_index_quantizer_freak.dat
+  DESTINATION assets/${PROJECT_NAME}
+)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/inverted_multi_index_quantizer_superpoint.dat
+  DESTINATION assets/${PROJECT_NAME}
+)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/superpoint_v1_fp16.rknn
+  DESTINATION assets/${PROJECT_NAME}
+)
 
-  install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
-  install(DIRECTORY cfg DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY cfg DESTINATION share/${PROJECT_NAME})
 
-  ament_package()
-else()
-  install(
-    PROGRAMS scripts/call_start.sh
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
-  )
-
-  install(DIRECTORY launch/
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-  )
-endif()
+ament_package()
 
 
 

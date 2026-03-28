@@ -3,25 +3,18 @@
 
 #include <chrono>
 #include <thread>
-#ifdef USE_ROS2
 #include <rosbag2_cpp/converter.hpp>
 #include <rosbag2_cpp/reader.hpp>
 #include <rosbag2_cpp/readers/sequential_reader.hpp>
 #include <rosbag2_cpp/storage_options.hpp>
 #include <rosbag2_cpp/typesupport_helpers.hpp>
-#else
-#include <rosbag/bag.h>
-#include <rosbag/view.h>
-#endif
 
 #include "interface/interface.h"
 #include "ros_handler/configurate_interface.h"
 
 namespace mvins {
-#ifdef USE_ROS2
 typedef rosbag2_cpp::converter_interfaces::SerializationFormatDeserializer Deserializer;
 typedef std::shared_ptr<rosbag2_storage::SerializedBagMessage> SerializedBagMessagePtr;
-#endif
 typedef std::chrono::high_resolution_clock HighResolutionClock;
 typedef std::chrono::high_resolution_clock::time_point TimePoint;
 
@@ -38,25 +31,17 @@ private:
         const TimePoint& time_start,
         const double timestamp_current_frame,
         const double timestamp_next_frame);
-#ifdef USE_ROS2
     template <typename MessageType>
     MessageType ParseTopic(const SerializedBagMessagePtr& serialized_message,
                            const rosbag2_cpp::ConverterTypeSupport& type_support);
-#endif
     void RunThread();
     
     std::unique_ptr<std::thread> streaming_thread_ptr_;
-#ifdef USE_ROS2
     std::unique_ptr<rosbag2_cpp::SerializationFormatConverterFactory> factory_ptr_;
     
     std::unique_ptr<Deserializer> cdr_deserializer_ptr_;
 
     std::unique_ptr<rosbag2_cpp::Reader> reader_ptr_;
-#else
-    std::unique_ptr<rosbag::Bag> bag_;
-    
-    std::unique_ptr<rosbag::View> bag_view_;
-#endif
     Interface* interface_ptr_;
 
     TopicMap ros_topics_;

@@ -1,10 +1,6 @@
 #include "interface/interface.h"
 
-#ifdef USE_ROS2
 #include "sensor_msgs/point_cloud_conversion.hpp"
-#else
-#include "sensor_msgs/point_cloud_conversion.h"
-#endif
 namespace mvins {
 //! Add scan data from ROS messages.
 void Interface::FillScanMsg(const LaserScanMsgPtr scan) {
@@ -13,12 +9,8 @@ void Interface::FillScanMsg(const LaserScanMsgPtr scan) {
         return;
     }
     common::ScanData scan_meas;
-#ifdef USE_ROS2
     RosTime t_msg = scan->header.stamp;
     uint64_t timestamp = t_msg.nanoseconds();
-#else
-    uint64_t timestamp = scan->header.stamp.toNSec();
-#endif
     scan_meas.ranges = scan->ranges;
     scan_meas.angle_min = scan->angle_min;
     scan_meas.angle_max = scan->angle_max;
@@ -52,14 +44,9 @@ void Interface::FillScanPc2Msg(const PointCloudMsgPtr scan) {
         return;
     }
 
-#ifdef USE_ROS2
     RosTime t_msg = scan->header.stamp;
     uint64_t timestamp = t_msg.nanoseconds();
     sensor_msgs::msg::PointCloud pointcloud;
-#else
-    uint64_t timestamp = scan->header.stamp.toNSec();
-    sensor_msgs::PointCloud pointcloud;
-#endif
 
     sensor_msgs::convertPointCloud2ToPointCloud(*scan, pointcloud);
     common::PointCloud scan_pointcloud;

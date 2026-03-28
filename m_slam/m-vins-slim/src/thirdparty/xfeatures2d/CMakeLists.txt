@@ -12,8 +12,6 @@ add_library(xfeatures2d ALIAS xfeatures2d_${CMAKE_SYSTEM_PROCESSOR})
 set_target_properties(xfeatures2d_${CMAKE_SYSTEM_PROCESSOR} PROPERTIES
         VERSION ${CMAKE_PROJECT_VERSION})
 
-if(USE_ROS2_API)
-        install(TARGETS xfeatures2d_${CMAKE_SYSTEM_PROCESSOR}
-          DESTINATION lib/m_vins
-        )
-endif()
+install(TARGETS xfeatures2d_${CMAKE_SYSTEM_PROCESSOR}
+  DESTINATION lib/m_vins
+)

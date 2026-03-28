@@ -119,15 +119,10 @@ void Interface::FillResetPoseMsg(
     }
 }
 
-#ifdef  USE_ROS2
 bool Interface::SlamServiceCall(ServiceRequestPtr req,
                                 ServiceResponsePtr res) {
     ServiceRequest& req_ref = *req;
     ServiceResponse& res_ref = *res;
-#else
-bool Interface::SlamServiceCall(ServiceRequest& req_ref,
-                                ServiceResponse& res_ref) {
-#endif
     const SlamService type = StringToSlamService(req_ref.action);
     switch (type) {
         case SlamService::Shutdown: {

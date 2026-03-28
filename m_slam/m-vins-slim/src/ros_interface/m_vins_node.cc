@@ -10,28 +10,18 @@
 #include "ros_handler/sig_crash.h"
 
 int main(int argc, char** argv) {
-#ifdef USE_ROS2
     rclcpp::init(argc, argv);
-#else
-    ros::init(argc, argv, "m_vins_node");
-    ros::start();
-#endif
     LOG(INFO) << "ROS main node started.";
     LOG(INFO) << "main thread pid: " << syscall(SYS_gettid);
 
     std::shared_ptr<NodeHandle> node_handler_ptr;
     std::string config_file_path = "";
     int log_level = 0;
-#ifdef USE_ROS2
     node_handler_ptr = NodeHandle::make_shared("m_vins_node");
     node_handler_ptr->declare_parameter<std::string>("slam_yaml_config", "");
     node_handler_ptr->declare_parameter<int>("log_level", 0);
     node_handler_ptr->get_parameter<std::string>("slam_yaml_config", config_file_path);
     node_handler_ptr->get_parameter<int>("log_level", log_level);
-#else
-    node_handler_ptr.reset(new NodeHandle);
-    // TODO
-#endif
     int glog_argc = 2;
     std::string log_level_argv = "--v=" + std::to_string(log_level);
     char** glog_argv = new char*[glog_argc];
@@ -102,10 +92,6 @@ int main(int argc, char** argv) {
                               &service_options,
                               &services,
                               &received_end_signal);
-#ifdef USE_ROS2
     rclcpp::shutdown();
-#else
-    ros::shutdown();
-#endif
     return 0;
 }

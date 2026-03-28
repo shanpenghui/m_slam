@@ -9,16 +9,12 @@ void Interface::FillOdomMsg(const OdometryMsgPtr odom) {
     }
     common::OdomData odom_meas;
 
-#ifdef USE_ROS2
     RosTime t_msg = odom->header.stamp;
     if (t_msg.nanoseconds() < 0l) {
         LOG(ERROR) << "Received a negative timestamp in odom message.";
         return;
     }
     odom_meas.timestamp_ns = t_msg.nanoseconds();
-#else
-    odom_meas.timestamp_ns = odom->header.stamp.toNSec();
-#endif
 
     odom_meas.angular_velocity << odom->twist.twist.angular.x,
                                   odom->twist.twist.angular.y,
@@ -58,12 +54,8 @@ void Interface::FillGroundTruthMsg(const OdometryMsgPtr gt) {
     }
     common::OdomData gt_meas;
 
-#ifdef USE_ROS2
     RosTime t_msg = gt->header.stamp;
     gt_meas.timestamp_ns = t_msg.nanoseconds();
-#else
-    gt_meas.timestamp_ns = gt->header.stamp.toNSec();
-#endif
 
     gt_meas.p << gt->pose.pose.position.x,
                  gt->pose.pose.position.y,

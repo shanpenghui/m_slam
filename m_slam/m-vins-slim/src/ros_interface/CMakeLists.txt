@@ -32,22 +32,20 @@ add_library(ros_interface_${CMAKE_SYSTEM_PROCESSOR} SHARED
 
 add_library(ros_interface ALIAS ros_interface_${CMAKE_SYSTEM_PROCESSOR})
 
-if(USE_ROS2_API)
-        ament_target_dependencies(ros_interface_${CMAKE_SYSTEM_PROCESSOR}
-                rcl
-                rclcpp
-                rclcpp_components
-                sensor_msgs
-                geometry_msgs
-                nav_msgs
-                std_msgs
-                visualization_msgs
-                cv_bridge
-                rosbag2_cpp
-                tf2_ros
-                mirobot_msgs
-                )
-endif()
+ament_target_dependencies(ros_interface_${CMAKE_SYSTEM_PROCESSOR}
+        rcl
+        rclcpp
+        rclcpp_components
+        sensor_msgs
+        geometry_msgs
+        nav_msgs
+        std_msgs
+        visualization_msgs
+        cv_bridge
+        rosbag2_cpp
+        tf2_ros
+        mirobot_msgs
+        )
 
 target_link_libraries(ros_interface_${CMAKE_SYSTEM_PROCESSOR}
         vins_common
@@ -63,17 +61,9 @@ target_link_libraries(${PROJECT_NAME}_node
 	ros_interface
         )
 
-if(USE_ROS2_API)
-        install(TARGETS ros_interface_${CMAKE_SYSTEM_PROCESSOR}
-          DESTINATION lib/m_vins
-        )
-        install(TARGETS ${PROJECT_NAME}_node
-          DESTINATION lib/m_vins
-        )
-else()
-        install(TARGETS ${PROJECT_NAME}_node
-          ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-          RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
-endif()
+install(TARGETS ros_interface_${CMAKE_SYSTEM_PROCESSOR}
+  DESTINATION lib/m_vins
+)
+install(TARGETS ${PROJECT_NAME}_node
+  DESTINATION lib/m_vins
+)

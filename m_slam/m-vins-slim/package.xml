@@ -39,20 +39,5 @@
     <build_type>ament_cmake</build_type>
   </export>
 
-  <!-- ROS1 depend in below: -->
-  <!-- <buildtool_depend>catkin</buildtool_depend>
-
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msg</build_depend>
-  <build_depend>image_transport</build_depend>
-  <build_depend>cv_bridge</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>mirobot_msgs</build_depend>
-  <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>std_msg</build_export_depend>
-  <build_export_depend>image_transport</build_export_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>std_msg</exec_depend>
-  <exec_depend>image_transport</exec_depend> -->
 
 </package>

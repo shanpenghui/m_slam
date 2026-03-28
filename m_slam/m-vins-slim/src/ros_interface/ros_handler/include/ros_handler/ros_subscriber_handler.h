@@ -13,7 +13,6 @@ enum class ShutDownType {
 
 // Topic subscribers and options for online mode.
 struct TopicSubscriberOptions {
-#ifdef USE_ROS2
     rclcpp::CallbackGroup::SharedPtr callback_group_scan_;
     rclcpp::SubscriptionOptions sub_options_scan_;
     rclcpp::CallbackGroup::SharedPtr callback_group_img_;
@@ -28,11 +27,9 @@ struct TopicSubscriberOptions {
     rclcpp::SubscriptionOptions sub_options_gt_;
     rclcpp::CallbackGroup::SharedPtr callback_group_reset_pose_;
     rclcpp::SubscriptionOptions sub_options_reset_pose_;
-#endif
 };
 
 struct TopicSubscribers {
-#ifdef USE_ROS2
     rclcpp::Subscription<LaserScanMsg>::SharedPtr scan_sub_;
     rclcpp::Subscription<PointCloudMsg>::SharedPtr scan_pc2_sub_;
     rclcpp::Subscription<ImageMsg>::SharedPtr img_sub_;
@@ -41,16 +38,6 @@ struct TopicSubscribers {
     rclcpp::Subscription<OdometryMsg>::SharedPtr odom_sub_;
     rclcpp::Subscription<OdometryMsg>::SharedPtr gt_sub_;
     rclcpp::Subscription<PoseWithCovarianceStampedMsg>::SharedPtr reset_pose_sub_;
-#else
-    std::shared_ptr<ros::Subscriber> scan_sub_;
-    std::shared_ptr<ros::Subscriber> scan_pc2_sub_;
-    std::shared_ptr<ros::Subscriber> img_sub_;
-    std::shared_ptr<ros::Subscriber> depth_sub_;
-    std::shared_ptr<ros::Subscriber> imu_sub_;
-    std::shared_ptr<ros::Subscriber> odom_sub_;
-    std::shared_ptr<ros::Subscriber> gt_sub_;
-    std::shared_ptr<ros::Subscriber> reset_pose_sub_;
-#endif
 };
 
 void InitializeSubscriberOptions(

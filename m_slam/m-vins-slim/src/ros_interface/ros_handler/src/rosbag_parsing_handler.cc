@@ -11,7 +11,6 @@ RosbagParser::RosbagParser(const std::string& data_directory,
       ros_topics_(ros_topics),
       data_realtime_playback_rate_(data_realtime_playback_rate) {
     CHECK(!data_directory.empty());
-#ifdef USE_ROS2
     rosbag2_cpp::StorageOptions storage_options;
     storage_options.uri = data_directory;
     storage_options.storage_id = "sqlite3";
@@ -26,23 +25,6 @@ RosbagParser::RosbagParser(const std::string& data_directory,
 
     factory_ptr_ = std::make_unique<rosbag2_cpp::SerializationFormatConverterFactory>();
     cdr_deserializer_ptr_ = factory_ptr_->load_deserializer("cdr");
-#else
-    try {
-        bag_.reset(new rosbag::Bag);
-        bag_->open(data_directory, rosbag::bagmode::Read);
-        VLOG(0) << "Get rosbag in " << data_directory;
-    } catch (const std::exception& ex) {
-        LOG(ERROR) << "Could not open the rosbag " << data_directory;
-    }
-
-    std::vector<std::string> all_topics;
-    for (const auto& name_topic_pair : ros_topics_) {
-        all_topics.push_back(name_topic_pair.second);
-    }
-    VLOG(0) << "Loading rosbag...";
-    bag_view_.reset(new rosbag::View(*bag_,
-                                     rosbag::TopicQuery(all_topics)));
-#endif
 }
 
 RosbagParser::~RosbagParser() {
@@ -74,7 +56,6 @@ void RosbagParser::ControlDataPlayRate(
     std::this_thread::sleep_until(time_start + time_between_frame);
 }
 
-#ifdef USE_ROS2
 template <typename MessageType>
 MessageType RosbagParser::ParseTopic(
     const SerializedBagMessagePtr& serialized_message,
@@ -93,7 +74,6 @@ MessageType RosbagParser::ParseTopic(
 
     return msg;
 }
-#endif
 
 void RosbagParser::RunThread() {
     VLOG(0) << "Start rosbag parsing ...";
@@ -102,7 +82,6 @@ void RosbagParser::RunThread() {
     bool first_mssage = true;
     TimePoint last_pub_finish_time_s;
 
-#ifdef USE_ROS2
 
     rcutils_time_point_value_t last_message_time_ns = 0;
     rosbag2_cpp::ConverterTypeSupport type_support_img;
@@ -188,58 +167,6 @@ void RosbagParser::RunThread() {
         ++message_count;
     }
 
-#else
-    uint64_t last_message_time_ns = 0u;
-    rosbag::View::iterator it_message = bag_view_->begin();
-    while (it_message != bag_view_->end()) {
-        if (interface_ptr_->IsDataFinished()) {
-            break;
-        }
-
-        const rosbag::MessageInstance& message = *it_message;
-
-        if (first_mssage) {
-            first_mssage = false;
-        } else {
-#if 1
-            uint64_t current_message_time_ns = message.getTime().toNSec();
-            ControlDataPlayRate(last_pub_finish_time_s,
-                                common::NanoSecondsToSeconds(last_message_time_ns),
-                                common::NanoSecondsToSeconds(current_message_time_ns));
-#endif
-        }
-
-        const std::string& topic = message.getTopic();
-        CHECK(!topic.empty());
-        if (topic == ros_topics_.at(CameraTopicName)) {
-            ImageMsgPtr image_msg = message.instantiate<ImageMsg>();
-            interface_ptr_->FillImageMsg(image_msg);
-        } else if (topic == ros_topics_.at(CameraDepthTopicName)) {
-            ImageMsgPtr depth_msg = message.instantiate<ImageMsg>();
-            interface_ptr_->FillDepthMsg(depth_msg);
-        } else if (topic == ros_topics_.at(OdomTopicName)) {
-            OdometryMsgPtr odom_msg = message.instantiate<OdometryMsg>();
-            interface_ptr_->FillOdomMsg(odom_msg);
-        } else if (topic == ros_topics_.at(ImuTopicName)) {
-            ImuMsgPtr imu_msg = message.instantiate<ImuMsg>();
-            interface_ptr_->FillImuMsg(imu_msg);           
-        } else if (topic == ros_topics_.at(ScanTopicName)) {
-            LaserScanMsgPtr scan_msg = message.instantiate<LaserScanMsg>();
-            interface_ptr_->FillScanMsg(scan_msg);            
-        } else if (topic == ros_topics_.at(ScanCloudTopicName)) {
-            PointCloudMsgPtr scan_pc2_msg = message.instantiate<PointCloudMsg>();
-            interface_ptr_->FillScanPc2Msg(scan_pc2_msg);            
-        } else if (topic == ros_topics_.at(GroundTruthTopicName)) {
-            OdometryMsgPtr gt_msg = message.instantiate<OdometryMsg>();
-            interface_ptr_->FillGroundTruthMsg(gt_msg);
-        }
-
-        last_message_time_ns = message.getTime().toNSec();
-        last_pub_finish_time_s = HighResolutionClock::now();
-        ++it_message;
-        ++message_count;
-    }
-#endif
     VLOG(0) << "Rosbag parsing finished! Processed totally "
             << message_count << " messages.";
     interface_ptr_->AddEndSignal();

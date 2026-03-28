@@ -23,18 +23,10 @@ void GammaTransform(const cv::Mat& src,
 }
 
 //! Add image data from ROS messages.
-#ifdef USE_ROS2
 void Interface::FillImageMsg(const ImageMsgPtr msg) {
-#else
-void Interface::FillImageMsg(const ImageMsgPtr& msg) {
-#endif
     FillImageMsgImpl(msg);
 }
-#ifdef USE_ROS2
 void Interface::FillImageMsgImpl(const ImageMsgPtr msg) {
-#else
-void Interface::FillImageMsgImpl(const ImageMsgPtr& msg) {
-#endif
     // Copy the ros image message to cv::Mat.
     cv_bridge::CvImageConstPtr cv_ptr;
 
@@ -48,12 +40,8 @@ void Interface::FillImageMsgImpl(const ImageMsgPtr& msg) {
     // Need copy operation for images from rosbag.
     const cv::Mat image = cv_ptr->image.clone();
     
-#ifdef USE_ROS2
     RosTime t_msg = msg->header.stamp;
     uint64_t timestamp = t_msg.nanoseconds();
-#else
-    uint64_t timestamp = msg->header.stamp.toNSec();
-#endif
 
     common::CvMatConstPtrVec images;
     if (image.type() == CV_8UC1) {
@@ -84,19 +72,11 @@ void Interface::FillImageMsgImpl(const ImageMsgPtr& msg) {
     }
 }
 
-#ifdef USE_ROS2
 void Interface::FillDepthMsg(const ImageMsgPtr depth_msg) {
-#else
-void Interface::FillDepthMsg(const ImageMsgPtr& depth_msg) {
-#endif
     FillDepthMsgImpl(depth_msg);
 }
 
-#ifdef USE_ROS2
 void Interface::FillDepthMsgImpl(const ImageMsgPtr depth_msg) {
-#else
-void Interface::FillDepthMsgImpl(const ImageMsgPtr& depth_msg) {
-#endif
     cv_bridge::CvImageConstPtr cv_ptr;
 
     try {
@@ -107,12 +87,8 @@ void Interface::FillDepthMsgImpl(const ImageMsgPtr& depth_msg) {
     }
     const cv::Mat depth = cv_ptr->image.clone();
     // CHECK_EQ(depth.type(), CV_16UC1);
-#ifdef USE_ROS2
     RosTime t_msg = depth_msg->header.stamp;
     uint64_t timestamp = t_msg.nanoseconds();
-#else
-    uint64_t timestamp = depth_msg->header.stamp.toNSec();
-#endif
 
     common::CvMatConstPtr depth_ptr = std::make_shared<const cv::Mat>(depth);
 
