@@ -118,3 +118,15 @@ git revert 7baa547
 ```bash
 git revert <commit-hash>
 ```
+
+### 2026-03-28 / Remove cfg_bk/ backup directory
+
+**提交**：见本次 git commit
+
+#### 实施内容
+- 删除 `cfg_bk/` 目录（13 个文件，与 `cfg/` 近乎完全重复）
+- 唯一差异：`cfg_bk/calib_avaia_cleaner.yaml` 的外参矩阵为旧值（1.0），`cfg/` 中已更新为 -1.0
+- `cfg/` 为当前使用版本，`cfg_bk/` 为历史备份，可通过 git 历史恢复
+
+#### 验证
+- 不涉及编译（纯配置文件备份目录），无需二进制对比
