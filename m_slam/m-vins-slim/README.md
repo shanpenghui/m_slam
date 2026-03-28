@@ -19,3 +19,8 @@
 
 当前工程默认按 `cfg/launch_params.yaml` + `cfg/config_{idle,mapping,reloc}.yaml` 工作，
 并以 `cfg/calib_avaia_cleaner.yaml` 为当前标定。
+
+## Optimization Record
+
+- 详细优化记录见：`docs/OPTIMIZATION_LOG.md`
+- 约定：后续每次精简/优化都在该文档追加“目标、改动明细、验证结果、可回滚点”。
