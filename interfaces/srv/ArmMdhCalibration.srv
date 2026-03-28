@@ -1,0 +1,19 @@
+uint16 srv_type                      # 0 - get tcp transformation  1 - get joint inverse 2 - get joint trajectory
+string arm_name                      # used in 0,1,2, arm name such as "left_g1"
+string tcp_name                      # used in 0,1,2, tcp such as "drill" or "camera"
+string frame_name                    # used in 0,1,2, "base" "arm_base" or tcp names are supported
+geometry_msgs/Pose pose_tcp          # used in 0, pose required transformation, pose_tcp provided in {tcp_name}; 
+                                     # used in 1,2, target pose of {tcp_name} in {frame_name}
+std_msgs/Float32MultiArray joint_pos # used in 0, current joint position;
+                                     # used in 1, init ik joint position, unit degree
+                                     # used in 2, start joint position
+uint16 ik_type                       # used in 1, value: 0 - inv6d 1 - inv5d
+uint16 ik_axis                       # used in 1, choose axis in inv5d, 0,1,2 corresponds to x y z
+---
+bool valid_response                  # used in 0,1 response being handled
+geometry_msgs/Pose pose_frame        # used in 0, get {tcp_name} in {frame_name}
+int16                     ik_result  # used in 1, get ik result
+                                     # used in 2, get trajectory result
+std_msgs/Float32MultiArray joint_ik  # used in 1, get joint ik, unit degree
+                                     # used in 2, get joint trajectory
+std_msgs/Float32MultiArray time_traj # used in 2, get trajectory time

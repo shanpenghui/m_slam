@@ -1,0 +1,9 @@
+uint8       state
+uint8       work_method
+uint8       motor_enable
+uint8       charge_status
+float32     wheel_base
+float32     wheel_radius
+uint8       error_level
+uint16[3]   error_code
+uint16[3]   warning_code

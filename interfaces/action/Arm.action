@@ -1,0 +1,26 @@
+# 定义目标信息
+string           action_name
+uint16           action_param         # 机械臂运行模式(0:MOVE_J,1:MOVE_L)
+uint16           plan_param           # (0非协同规划 1协同规划 2无规划)
+ArmControlData[] arm_control_data     # 各臂运行数据
+float32          speed_percentage     # 0-100，default 10
+bool             disable_self_or_obstacle_avoidance_planning # true or false
+bool             enable_replan                               # true or false
+bool             disable_force_collision_detection #true or false
+bool             disable_self_or_obstacle_collision_detection #true or false
+---
+# 定义结果信息
+string msg                 # IK解算结果，最终关节角误差信息等
+geometry_msgs/Pose pose  # 多臂结果信息
+---
+# 定义周期反馈的消息
+float32[] percent_complete #
+uint16 state # 当前task状态
+#STATUS_UNKNOWN = 0
+#STATUS_ACCEPTED = 1
+#STATUS_EXECUTING = 2
+#STATUS_CANCELING = 3
+#STATUS_SUCCEEDED = 4
+#STATUS_CANCELED = 5
+#STATUS_ABORTED = 6
+string error_msg # 暂时没用

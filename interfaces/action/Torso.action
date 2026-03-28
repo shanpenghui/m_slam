@@ -1,0 +1,23 @@
+# 定义目标信息
+float32 torso_height  #身体高度  [工业机器人 1.0～1.35（胸口位置相对于地面的高度)] [家用机器人]
+float32 torso_yaw     #身体旋转角度 [工业机器人 没有该自由度，可以填任意值] [家用机器人 -180～180]
+float32 head_pitch    #头部俯仰角度 [工业机器人 -34~19] [家用机器人 34~19]
+float32 head_yaw      #头部俯仰角度 [工业机器人 -90～90] [家用机器人 -90～90]
+float32 max_velocity  #最大速度 [0.05~0.60] 默认为0.15，如果为0则使用当前内部设置的速度
+uint8 work_mode       # 0 position mode  1 velocity mode  2 start teleop 3 stop teleop  4 lift mode
+---
+# 定义结果信息
+bool success # 执行结果
+string msg # 执行结果描述
+---
+# 定义周期反馈的消息
+uint16 state    # 当前task状态
+                #STATUS_UNKNOWN = 0
+                #STATUS_ACCEPTED = 1
+                #STATUS_EXECUTING = 2
+                #STATUS_CANCELING = 3
+                #STATUS_SUCCEEDED = 4
+                #STATUS_CANCELED = 5
+                #STATUS_ABORTED = 6
+string error_msg # 暂时没用
+

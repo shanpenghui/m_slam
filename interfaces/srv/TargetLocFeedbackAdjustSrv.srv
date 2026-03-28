@@ -1,0 +1,14 @@
+builtin_interfaces/Time stamp
+string tool_name
+string target_name
+#sensor_msgs/Image rgb
+---
+builtin_interfaces/Time stamp
+geometry_msgs/Pose adjust_pose
+#bool flag
+BaseFeedback feedback
+
+
+#tool_name: ‘tip’
+#target_name: 'screw'
+#取螺钉的视觉引导结束后，调用此服务，返回的adjust_pose为更新目标位置到当前位置的x，y，z差值

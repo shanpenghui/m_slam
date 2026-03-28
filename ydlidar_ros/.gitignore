@@ -1,0 +1,10 @@
+build/
+log/
+export/
+.vscode/*
+!.vscode/c_cpp_properties.json
+
+version
+*.lst
+
+!.gitkeep

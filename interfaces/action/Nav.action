@@ -1,0 +1,15 @@
+BaseHead head # 主要的task信息  其中，type=0： 给定pose导航； type=1： 路径点导航。 action_name = "navigation"
+geometry_msgs/Pose2D target_pose # x,y, theta 地图坐标下的机器人的位姿。
+uint16  waypoint   #事先规划好的机器人路径节点，比如接待点 = 1，充点电 = 2， 待机点 =0 等。
+---
+BaseFeedback feedback # Action的返回结果，科技月演示暂时用不上
+---
+string state # 当前task状态 unknown / accepted / executing / canceling / success / canceled / aborted / pause
+string state_msg # 如果state是failed的话，表示失败原因
+
+### head 家用底盘接口说明
+### head.action_name = {"navigation"(目标点导航), "move"(直线), "turn"(原地旋转), "charge"(回充)}
+### "navifation" : target_pose 目标点坐标
+### "move" : target_pose.x 直线移动的距离 负数为后退
+### "turn" : target_pose.theta 原地旋转的角度
+### "charge" : 无需参数

@@ -1,0 +1,4 @@
+string bottle_name
+---
+geometry_msgs/PoseArray pose_array
+BaseFeedback feedback

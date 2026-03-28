@@ -1,0 +1,18 @@
+---
+# 定义结果信息
+bool success # 执行结果
+string msg # 执行结果描述
+---
+# 定义人脸返回框像素坐标 {min_x, min_y, width, height}
+std_msgs/Float32MultiArray bbox
+# 定义人脸landmark像素坐标 {eye_left, eye_right, nose, mouth_left, mouth_right}
+std_msgs/Float32MultiArray landmark
+# 定义周期反馈的消息
+uint16 state    # 当前task状态
+                #STATUS_UNKNOWN = 0
+                #STATUS_ACCEPTED = 1
+                #STATUS_EXECUTING = 2
+                #STATUS_CANCELING = 3
+                #STATUS_SUCCEEDED = 4
+                #STATUS_CANCELED = 5
+                #STATUS_ABORTED = 6

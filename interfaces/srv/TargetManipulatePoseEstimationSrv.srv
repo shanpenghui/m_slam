@@ -1,0 +1,15 @@
+builtin_interfaces/Time stamp
+string target_name
+int64 perception_type
+int64 arm_index
+int64 camera_id
+---
+builtin_interfaces/Time stamp
+geometry_msgs/Pose est_pose
+geometry_msgs/Pose delta_pose
+geometry_msgs/Pose est_pose_pre
+
+BaseFeedback feedback
+
+#perception_type = 0, target_name='button', arm_index = 1 右臂
+#perception_type = 1, target_name='box', arm_index = 0 左臂， arm_index = 1 右臂

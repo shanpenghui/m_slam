@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.5)
+cmake_policy(SET CMP0048 NEW)
+
+project(third_lib)
+
+# Include Yaml-cpp.
+set(YAML_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/yaml-cpp")
+set(YAML_LIBRARIES ${PROJECT_SOURCE_DIR}/yaml-cpp/${CMAKE_SYSTEM_PROCESSOR}/libyaml-cpp.so)
+# Set parent scope variable.
+set(YAML_INCLUDE_DIR ${YAML_INCLUDE_DIR} PARENT_SCOPE)
+set(YAML_LIBRARIES ${YAML_LIBRARIES} PARENT_SCOPE)
+message(STATUS YAML_INCLUDE_DIR ${YAML_INCLUDE_DIR})
+message(STATUS YAML_LIBRARIES ${YAML_LIBRARIES})
+
+set (THIRD_LIB_INCLUDE_DIR
+        ${YAML_INCLUDE_DIR}
+        PARENT_SCOPE
+)
+set (THIRD_LIB_LIBRARIES
+        ${YAML_LIBRARIES}
+        PARENT_SCOPE
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp/${CMAKE_SYSTEM_PROCESSOR}
+        DESTINATION lib/m_vins
+)

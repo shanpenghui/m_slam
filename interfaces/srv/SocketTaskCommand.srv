@@ -1,0 +1,10 @@
+string task_source
+string task_type
+string task_id
+string action_type
+string robot_id
+string location_id
+
+---
+
+BaseFeedback feedback

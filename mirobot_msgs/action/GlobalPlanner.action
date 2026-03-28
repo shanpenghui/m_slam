@@ -1,0 +1,14 @@
+#goal definition
+int32 command
+int32 mode #mode=0:navigation;mode=1:explore map;
+bool usedirection
+geometry_msgs/PoseStamped goal
+---
+#result definition RUNNING = 0, SUCCESS = 1, FAILURE = 2
+int32  error_code
+---
+#feedback
+nav_msgs/Path path
+int32  error_code
+string error_msg
+int32 rpcnt #重规划尝试次数

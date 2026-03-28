@@ -1,0 +1,8 @@
+string servo_name # (pick_screw, drill_screw)
+string object     
+uint16 servo_id
+---
+BaseFeedback feedback
+---
+string state     # 当前task状态 unknown / accepted / executing / canceling / success / canceled / aborted / pause
+string state_msg #  

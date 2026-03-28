@@ -1,0 +1,7 @@
+.aider*
+.cache
+.vscode
+build*
+install*
+log
+realease*

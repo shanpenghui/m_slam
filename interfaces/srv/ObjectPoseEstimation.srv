@@ -1,0 +1,11 @@
+string cmd
+string name
+sensor_msgs/PointCloud2 cloud
+string info
+---
+BaseFeedback feedback
+int32 error
+string error_message
+float32 score
+geometry_msgs/Pose pose
+string info

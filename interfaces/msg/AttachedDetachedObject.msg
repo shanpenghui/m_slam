@@ -1,0 +1,13 @@
+bool addattached_object
+bool detached_object
+string object_to_attach_id
+string frame_id
+float32 cylinder_height
+float32 cylinder_radius
+float32 pose_position_x
+float32 pose_position_y
+float32 pose_position_z
+float32 pose_orientation_x
+float32 pose_orientation_y
+float32 pose_orientation_z
+float32 pose_orientation_w

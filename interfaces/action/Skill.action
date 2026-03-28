@@ -1,0 +1,11 @@
+BaseHead head # 主要的task信息
+string object
+float32 value
+string language
+---
+BaseFeedback feedback # Action的返回结果，科技月演示暂时用不上
+nav_msgs/Path path # 机械臂末端或导航运动轨迹，科技月演示暂时用不上
+---
+string state # 当前task状态 unknown / accepted / executing / canceling / success / canceled / aborted / pause
+string state_msg # 如果state是failed的话，表示失败原因
+int32 number_of_recoveries # 重启次数

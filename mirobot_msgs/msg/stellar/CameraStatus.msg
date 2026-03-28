@@ -1,0 +1,8 @@
+string sdk_version
+string device_name
+string device_sn
+uint8 rgb_stream_status
+uint8 ir_stream_status
+uint8 depth_stream_status
+uint8 point_cloud_stream_status
+

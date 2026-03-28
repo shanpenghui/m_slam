@@ -1,0 +1,7 @@
+string action
+int32 id
+float32[] float_array
+---
+int32 feedback
+string[] str
+float32[] float_array

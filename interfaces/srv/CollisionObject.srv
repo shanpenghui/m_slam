@@ -1,0 +1,10 @@
+uint16 action_index # 0 add collision object to scene，1 remove collision object from scene, 2 attached collision to ee,3 detached object from ee, 4 add pcd file to local map, 5 clear local map, 6 add mesh file(STL),7 remove mesh
+string object_id
+string frame_id
+shape_msgs/SolidPrimitive primitive
+string file_path    #pcd or stl files
+geometry_msgs/Pose pose
+
+---
+
+bool result

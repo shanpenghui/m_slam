@@ -1,0 +1,11 @@
+string object_name
+uint16 action_param
+uint32 camera_id # 0-->胸部相机  1-->头部相机  
+---
+float32[] position
+float32[] normal
+bool det_result
+geometry_msgs/Pose est_pose
+
+#bool flag
+BaseFeedback feedback

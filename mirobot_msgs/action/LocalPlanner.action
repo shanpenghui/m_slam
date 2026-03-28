@@ -1,0 +1,11 @@
+#goal definition,mode:tracking goal or global planner
+nav_msgs/Path route
+int8 mode
+---
+#result definition RUNNING = 0, SUCCESS = 1, FAILURE = 2
+int8   mode
+int32  error_code
+---
+#feedback
+int32  error_code
+string error_msg

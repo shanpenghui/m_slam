@@ -1,0 +1,10 @@
+# 输入参数
+geometry_msgs/Pose target_pose
+geometry_msgs/Pose tcp_pose
+
+---
+
+# 输出结果
+std_msgs/Float32MultiArray corrected_joints_left      # 修正后的左臂7个关节角度 [rad]
+std_msgs/Float32MultiArray corrected_joints_right     # 修正后的右臂7个关节角度 [rad]
+BaseFeedback feedback  # 执行状态和反馈信息

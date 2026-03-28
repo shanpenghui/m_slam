@@ -1,0 +1,8 @@
+uint8 button_status
+uint8 output_12v
+uint8 output_24v
+uint8 emergency_stop
+float32 voltage_12v_sample
+float32 voltage_24v_sample
+float32 current_sample
+uint8 error_code

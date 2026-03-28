@@ -1,0 +1,17 @@
+
+# Request
+builtin_interfaces/Time stamp
+string target_name
+int32 perception_type
+int32 arm_index
+string[] camera_names   # optional filter; if empty, use all in config
+
+---
+# Response
+std_msgs/Header header
+bool success
+string msg
+geometry_msgs/Pose[] est_poses          # same order as camera_names_used
+string[] camera_names_used               # resolved names from config
+bool[] per_camera_success                # true/false per camera
+string[] per_camera_msg                  # error/details per camera

@@ -1,0 +1,32 @@
+string action_name
+---
+bool success
+uint16 status
+---
+float32 action_percentage
+uint16 status
+
+# hand action_name instructions
+# "动作说明: action_name"
+# 自检: "self_check"
+# 摊平手掌: "reset"
+# 八的手势: "handsome"
+# 比心: "heart"
+# 小比心: "small_heart"
+# 点赞: "thumbs_up"
+# 很666: "six"
+# Yeah: "yeah"
+# Rock: "rock"
+# OK: "ok"
+# One: "one"
+# 这些action_name后面都得后缀 _both 或 _right 或 _left来确认是左右手的动作
+
+#status 说明
+#0: "Stall",         # bit 0: 堵转
+#1: "Overheat",      # bit 1: 过温
+#2: "Overcurrent",   # bit 2: 过流
+#3: "Motor Fault",   # bit 3: 电机异常
+#4: "Flash Parameter Error or Unsaved",  # bit 4: Flash 参数错误或者未保存
+#5: "Send Error",    #bit 5: 自定义：发送错误
+#6: "Hard Error",    #bit 6: 自定义：硬件错误，实际位置偏差过大
+#7: "ForceMax Error",    #bit 7: 自定义：力矩过大，无法达到目标位置

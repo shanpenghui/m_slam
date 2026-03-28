@@ -1,0 +1,4 @@
+/m_vins_node:
+  ros__parameters:
+    slam_yaml_config: /userdata/nav/install/share/m_vins/cfg
+    log_level: 0

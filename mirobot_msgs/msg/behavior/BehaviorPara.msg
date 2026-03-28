@@ -1,0 +1,9 @@
+int32 command_id
+int32  command_type
+bool  command_active
+int32 action
+int32 level
+int32 index
+float32[] buff1
+float32[] buff2
+float32[] buff3
