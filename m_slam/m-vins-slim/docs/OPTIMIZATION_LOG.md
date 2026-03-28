@@ -15,10 +15,10 @@
 - [ ] **Visual / ScanVisual 链路**（量最大）：`src/vins_core/src/feature_tracker/` 整目录（8文件）、`camera_reprojection_cost.cc`、`visual_loop_interface.cc`、`image_interface.cc`、`vins_handler` 中 Visual/ScanVisual 分支、非当前设备的标定/mask 文件（`calib_d435/euroc/uhumans2.yaml`、`mask_d435/euroc/uhumans2.png`）、`src/thirdparty/xfeatures2d/`
 - [ ] **IMU 融合**（`use_imu: false`）：`imu_propagation_cost.cc`、`imu_propagator.cc`、`imu_interface.cc`、`vins_handler` 中 IMU 相关逻辑
 - [ ] **OctoMap**（`do_octo_mapping: false`）：`src/octomap_core/` 整个模块（3文件）、`vins_handler` 中 OctoMapper 逻辑、`tools/octomap2ply/`
-- [ ] **调试/训练功能**（`voc_train_mode/feature_tracking_test_mode/save_colmap_model: false`）：`vins_thread.cc` 中 voc_training 逻辑、feature_tracking_test 逻辑、colmap 保存逻辑
+- [x] **调试/训练功能**（`voc_train_mode/feature_tracking_test_mode/save_colmap_model: false`）：`vins_thread.cc` 中 voc_training 逻辑、feature_tracking_test 逻辑、colmap 保存逻辑
 - [ ] **Rosbag 离线回放**：`rosbag_parsing_handler.cc/.h`、`ros_life_circle_handler.cc` 中 RosbagParser 启动逻辑、`scripts/slam_offline.sh`
 - [ ] **cfg_bk/ 备份目录**：与 `cfg/` 完全重复
-- [ ] **aslam_cv_detector + test 文件**：`src/thirdparty/aslam_cv2/aslam_cv_detector/`（KAZE/LSD，代码中未调用）、各模块 `test/` 目录（12个测试文件，不参与构建）
+- [x] **aslam_cv_detector + test 文件**：`src/thirdparty/aslam_cv2/aslam_cv_detector/`（KAZE/LSD，代码中未调用）、各模块 `test/` 目录（12个测试文件，不参与构建）
 - [ ] **FREAK 视觉资源**：`assets/inverted_multi_index_quantizer_freak.dat`（视觉关闭时不需要）
 
 ---
@@ -130,3 +130,46 @@ git revert <commit-hash>
 
 #### 验证
 - 不涉及编译（纯配置文件备份目录），无需二进制对比
+
+### 2026-03-28 / Remove aslam_cv_detector, test files, and debug/training features
+
+**提交**：见本次 git commit
+
+#### Part 1: aslam_cv_detector + test 文件
+- 删除 `src/thirdparty/aslam_cv2/aslam_cv_detector/` 整个目录（KAZE/LSD，未被任何代码调用）
+- 删除 `aslam_cv_cameras/test/` 和 `aslam_cv_common/test/`（12个测试文件，不参与构建）
+- 移除 CMakeLists.txt 中 aslam_cv_detector 的 include 路径
+- 修复 aslam_cv2/CMakeLists.txt 中残留的 `if(USE_ROS2_API)` 包裹
+
+#### Part 2: 调试/训练功能
+删除以下运行时调试功能代码（配置中均为 false/关闭状态）：
+
+**voc_train_mode（词袋训练）：**
+- 删除 `VocTrainingThread()` 函数定义（vins_thread.cc）
+- 删除 `Start()` 中的条件线程启动
+- 删除 `voc_training_thread_` 成员变量和 join 逻辑
+
+**feature_tracking_test_mode（特征追踪测试）：**
+- 删除 `FeatureTrackingTestThread()` 函数定义
+- 删除 `feature_tracking_testing_thread_` 成员变量和 join 逻辑
+- 删除 `SyncSensorThread()` 中 debug 模式的 `CollectImageDataOnly` 分支
+
+**save_colmap_model（Colmap 模型保存）：**
+- 删除 `SaveColmapModel()` 函数定义（vins_handler.cc）
+- 删除 `FrontendThread()` 中的 colmap 保存调用
+
+**CollectImageDataOnly（仅图像数据收集）：**
+- 删除函数定义和声明（仅被上述 debug 分支调用）
+
+**slam_config：**
+- 移除 `voc_train_mode`、`feature_tracking_test_mode`、`save_colmap_model`、`feature_tracking_test_path` 配置字段定义、YAML 解析和日志打印
+
+#### 遇到的问题
+- `SetValueBasedOnYamlKey` 调用跨 3 行，按关键词逐行删除会留下不完整的函数调用 → 需要检测并删除残留的不完整调用
+
+#### 验证结果
+- 编译通过：`Finished [16min 55s]`
+- 二进制对比（vs CNN 清理后的基准）：
+  - 4 个库完全一致（octomap_core、aslam_cv、nabo、xfeatures2d）
+  - 6 个变化的库：**文件大小全部一致** + **导出符号表全部一致**
+  - `VocTrainingThread`、`FeatureTrackingTestThread`、`SaveColmapModel`、`CollectImageDataOnly` 符号已从 vins_handler .so 中消失（符合预期）

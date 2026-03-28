@@ -13,8 +13,6 @@ namespace common{
             "data_realtime_playback_rate";
     constexpr char kYamlFieldLogPath[] =
             "log_path";
-    constexpr char kYamlFieldFeatureTrackingTestPath[] =
-            "feature_tracking_test_path";
     constexpr char kYamlFieldLogTimeTable[] =
             "log_time_table";
     constexpr char kYamlFieldMapPath[] =
@@ -31,12 +29,6 @@ namespace common{
             "mask_path";
     constexpr char kYamlFieldDoOctoMapping[] =
             "do_octo_mapping";
-    constexpr char kYamlFieldVocTrainMode[] =
-            "voc_train_mode";
-    constexpr char kYamlFieldFeatureTrackingTestMode[] =
-            "feature_tracking_test_mode";
-    constexpr char kYamlFieldSaveColmapModel[] =
-            "save_colmap_model";
     const char kYamlFieldDoObstacleRemoval[] =
             "do_obstacle_removal";
     const char kYamlFieldContourLength[] =
@@ -223,7 +215,6 @@ namespace common{
         std::string log_path = "../log/";
 
         // Path to save feature tracking test images.
-        std::string feature_tracking_test_path = "../feature_tracking_test/";
 
         // Whether to use time table for efficiency check.
         bool log_time_table = true;
@@ -250,13 +241,9 @@ namespace common{
         bool do_octo_mapping = false;
 
         // If run vocabulary training mode.
-        bool voc_train_mode = false;
 
         // If run feature tracking testing mode.
-        bool feature_tracking_test_mode = false;
 
-        // If save colmap model for SFM.
-        bool save_colmap_model = false;
 
         // If remove small obstacles when create map show.
         bool do_obstacle_removal = true;

@@ -172,12 +172,6 @@ void VinsHandler::ReleaseJoinableThreads() {
     if (reloc_init_thread_ != nullptr && reloc_init_thread_->joinable()) {
         reloc_init_thread_->join();
     }
-    if (voc_training_thread_ != nullptr && voc_training_thread_->joinable()) {
-        voc_training_thread_->join();
-    }
-    if (feature_tracking_testing_thread_ != nullptr && feature_tracking_testing_thread_->joinable()) {
-        feature_tracking_testing_thread_->join();
-    }
 }
 
 void VinsHandler::LoadCalibParams(const std::string& path) {
@@ -826,29 +820,6 @@ void VinsHandler::SyncSensorData() {
     }
 }
 
-void VinsHandler::CollectImageDataOnly() {
-    if (img_buffer_.empty()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        continuous_sleep_time_ms_ += 10;
-        if (continuous_sleep_time_ms_ > 1000) {
-            LOG(WARNING) << "No image measurements come in for more than 1 second.";
-            continuous_sleep_time_ms_ = 0;
-        }
-        return;
-    }
-
-    while (!img_buffer_.empty()) {
-        img_mutex_.lock();
-        common::ImageData img_data = img_buffer_.front();
-        img_buffer_.pop_front();
-        img_mutex_.unlock();
-        hybrid_buffer_.emplace_back(img_data.timestamp_ns,
-                                    common::ImuDatas(),
-                                    common::OdomDatas(),
-                                    img_data,
-                                    nullptr);
-    }
-}
 
 bool VinsHandler::InitializeStateByGt(const uint64_t timestamp_ns,
                                       common::State* state_ptr) {
@@ -3165,61 +3136,6 @@ void VinsHandler::LaserCorrectByLine(const common::LinesWithId& lines,
     }
 }
 
-void VinsHandler::SaveColmapModel() {
-    const std::string completed_colmap_saving_path = common::ConcatenateFilePathFrom(
-        common::getRealPath(config_->map_path), "colmap");
-    common::createPath(completed_colmap_saving_path);
-    const std::string completed_colmap_images_path = common::ConcatenateFilePathFrom(
-        common::getRealPath(config_->map_path), "colmap/images");
-    common::createPath(completed_colmap_images_path);
-    const std::string completed_colmap_depth_path = common::ConcatenateFilePathFrom(
-        common::getRealPath(config_->map_path), "colmap/depth_filtered");
-    common::createPath(completed_colmap_depth_path);
-    const std::string completed_images_file_path = common::ConcatenateFilePathFrom(
-        completed_colmap_saving_path, "images.txt");
-    const std::string completed_trainval_poses_file_path = common::ConcatenateFilePathFrom(
-        completed_colmap_saving_path, "poses.txt");
-    std::ofstream ofs_images(completed_images_file_path.c_str());
-    std::ofstream ofs_trainval_poses(completed_trainval_poses_file_path.c_str());
-    int img_idx = 1;
-    for (const auto& key_frame : key_frames_ba_) {
-        if (key_frame.GetType() == common::KeyFrameType::Scan ||
-            key_frame.sensor_meas.img_data.depth == nullptr) {
-            continue;
-        }
-        const aslam::Transformation& T_OtoG = key_frame.state.T_OtoG;
-        const aslam::Transformation T_CtoG = T_OtoG * cameras_->get_T_BtoC(0).inverse();
-        const aslam::Transformation T_GtoC = T_CtoG.inverse();
-
-        const std::string image_file_name = std::to_string(static_cast<int>(10e7) + img_idx) + ".png";
-        const std::string completed_image_saving_path = common::ConcatenateFilePathFrom(
-        completed_colmap_images_path, image_file_name);
-        const std::string completed_depth_saving_path = common::ConcatenateFilePathFrom(
-        completed_colmap_depth_path, image_file_name);
-        cv::imwrite(completed_image_saving_path, *(key_frame.sensor_meas.img_data.images[0]));
-        cv::imwrite(completed_depth_saving_path, *(key_frame.sensor_meas.img_data.depth));
-
-        ofs_images << img_idx << " "
-                    << T_GtoC.getEigenQuaternion().w() << " "
-                    << T_GtoC.getEigenQuaternion().x() << " "
-                    << T_GtoC.getEigenQuaternion().y() << " "
-                    << T_GtoC.getEigenQuaternion().z() << " "
-                    << T_GtoC.getPosition().x() << " "
-                    << T_GtoC.getPosition().y() << " "
-                    << T_GtoC.getPosition().z() << " "
-                    << 1 << " "
-                    << image_file_name << std::endl;
-        ofs_images << std::endl;
-
-        ofs_trainval_poses << T_CtoG.getTransformationMatrix() << std::endl;
-
-        img_idx++;
-    }
-    ofs_images.close();
-    ofs_trainval_poses.close();
-    VLOG(0) << "Colmap model save completed, model path: "
-            << completed_colmap_saving_path;
-}
 
 template
 void VinsHandler::ConcatSensorData<common::ImuData>(

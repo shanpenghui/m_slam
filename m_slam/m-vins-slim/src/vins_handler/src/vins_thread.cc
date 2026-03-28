@@ -12,20 +12,12 @@ namespace vins_handler {
 void VinsHandler::Start() {
     sync_data_thread_.reset(new std::thread(&VinsHandler::SyncSensorThread, this));
 
-    if (config_->voc_train_mode) {
-        voc_training_thread_.reset(
-                    new std::thread(&VinsHandler::VocTrainingThread, this));
-    } else if (config_->feature_tracking_test_mode) {
-        feature_tracking_testing_thread_.reset(
-                    new std::thread(&VinsHandler::FeatureTrackingTestThread, this));
-    } else {
-        frontend_thread_.reset(new std::thread(&VinsHandler::FrontendThread, this));
-        loop_thread_.reset(new std::thread(&VinsHandler::LoopThread, this));
-        if (config_->mapping && tuning_mode_ == common::TuningMode::Online) {
-            posegraph_thread_.reset(new std::thread(&VinsHandler::PoseGraphThread, this));
-        }
-        backend_thread_.reset(new std::thread(&VinsHandler::BackendThread, this));
+    frontend_thread_.reset(new std::thread(&VinsHandler::FrontendThread, this));
+    loop_thread_.reset(new std::thread(&VinsHandler::LoopThread, this));
+    if (config_->mapping && tuning_mode_ == common::TuningMode::Online) {
+        posegraph_thread_.reset(new std::thread(&VinsHandler::PoseGraphThread, this));
     }
+    backend_thread_.reset(new std::thread(&VinsHandler::BackendThread, this));
 
     if (reloc_) {
         reloc_init_thread_.reset(new std::thread(&VinsHandler::RelocInitThread, this));
@@ -42,14 +34,7 @@ void VinsHandler::SyncSensorThread() {
     map_thread_done_[syscall(SYS_gettid)] = false;
     
     while (true) {
-        if (config_->voc_train_mode || config_->feature_tracking_test_mode) {
-            CollectImageDataOnly();
-
-            if (data_finish_ && img_buffer_.empty()) {
-                LOG(INFO) << "Sync data thread can close now.";
-                break;
-            }
-        } else {
+        {
             // Sync sensor data from buffer.
             SyncSensorData();
 
@@ -556,9 +541,7 @@ void VinsHandler::BackendThread() {
                             // Batch optimization.
                             BatchFusion();
 
-                            if (config_->save_colmap_model) {
-                                SaveColmapModel();
-                            }
+
                         }
                     } else {
                         // Re-castray after pose graph.
@@ -656,206 +639,6 @@ void VinsHandler::BackendThread() {
     map_thread_done_[syscall(SYS_gettid)] = true;
 }
 
-void VinsHandler::VocTrainingThread() {
-    LOG(INFO) << "Vocabulary training thread pid: " << syscall(SYS_gettid);
-    map_thread_done_[syscall(SYS_gettid)] = false;
 
-    int target_dimensionality = 10;
-    int half_target_dimensionality = 5;
-
-    cv::Mat all_desc(0, target_dimensionality, CV_32FC1);
-    while (true) {
-        if (!hybrid_buffer_.empty()) {
-            const common::SyncedHybridSensorData hybrid_data =
-                    hybrid_buffer_.front();
-            std::unique_lock<std::mutex> lock(hybrid_buffer_mutex_);
-            hybrid_buffer_.pop_front();
-            common::VisualFrameData visual_frame_data;
-
-            feature_tracker_ptr_->DetectAndExtractFeature(hybrid_data.img_data.timestamp_ns,
-                                                hybrid_data.img_data.images[0],
-                                                &visual_frame_data,
-                                                &track_id_provider_);
-            visual_loop_interface_ptr_->ProjectDescriptors(visual_frame_data.descriptors,
-                                                           &visual_frame_data.projected_descriptors);
-
-            VLOG(0) << "Detected keypoints size: " << visual_frame_data.key_points.cols()
-                    << " descriptors size: " << visual_frame_data.projected_descriptors.cols()
-                    << " dims: " << visual_frame_data.projected_descriptors.rows();
-
-            cv::Mat descriptors_cv(cv::Size(visual_frame_data.projected_descriptors.rows(),
-                                            visual_frame_data.projected_descriptors.cols()), CV_32FC1,
-                                            visual_frame_data.projected_descriptors.data());
-            
-            cv::vconcat(all_desc, descriptors_cv, all_desc);
-        } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
-
-        if (data_finish_ && img_buffer_.empty() && hybrid_buffer_.empty()) {
-            constexpr int K = 1000;
-            cv::Mat all_desc_left = all_desc(cv::Rect(0, 0, half_target_dimensionality, all_desc.rows));
-            cv::Mat labels_left, clusters_left;
-            VLOG(0) << "Start to train left half words.";
-            cv::kmeans(all_desc_left, K, labels_left, cv::TermCriteria(), 2, cv::KMEANS_PP_CENTERS, clusters_left);
-            VLOG(0) << "End to train left half words.";
-
-            cv::Mat all_desc_right = all_desc(cv::Rect(half_target_dimensionality, 
-                0, half_target_dimensionality, all_desc.rows));
-            cv::Mat labels_right, clusters_right;
-            VLOG(0) << "Start to train right half words.";
-            cv::kmeans(all_desc_right, K, labels_right, cv::TermCriteria(), 2, cv::KMEANS_PP_CENTERS, clusters_right);
-            VLOG(0) << "End to train right half words.";
-
-            std::string complete_new_asset_file_name = 
-                common::ConcatenateFilePathFrom(config_->assets_path,
-                "inverted_multi_index_quantizer_superpoint_new.dat");
-
-            std::ofstream out_stream(complete_new_asset_file_name,
-                                     std::ios_base::binary);
-
-            int serialized_version = 100;
-            common::Serialize(serialized_version, &out_stream);
-            common::Serialize(target_dimensionality, &out_stream);   
-            Eigen::MatrixXf words_left =
-                    Eigen::Map<common::DescriptorsMatF32>(
-                        (float*)clusters_left.data, half_target_dimensionality, K);
-            common::Serialize(words_left, &out_stream);
-            Eigen::MatrixXf words_right =
-                    Eigen::Map<common::DescriptorsMatF32>(
-                        (float*)clusters_right.data, half_target_dimensionality, K);
-            common::Serialize(words_right, &out_stream);
-            out_stream.close();
-
-            LOG(INFO) << "Vocabulary training thread can close now.";
-            break;
-        }
-    }
-    map_thread_done_[syscall(SYS_gettid)] = true;
-}
-
-void VinsHandler::FeatureTrackingTestThread() {
-    LOG(INFO) << "Feature tracking test thread pid: " << syscall(SYS_gettid);
-    map_thread_done_[syscall(SYS_gettid)] = false;
-
-    std::unique_ptr<common::VisualFrameData> last_visual_frame_data_ptr = nullptr;
-    size_t count = 0, frame_gap = 10;
-    double matches_rank = 0, good_matches_size = 0;
-    
-    while (true) {
-        if (!hybrid_buffer_.empty()) {
-            // Match every frame_gap frame 
-            if ((count ++) % frame_gap != 0) {
-                hybrid_buffer_.pop_front();
-                continue;
-            }
-            const common::SyncedHybridSensorData hybrid_data = hybrid_buffer_.front();
-            common::VisualFrameData visual_frame_data_kp1;
-
-            LOG(INFO) << "----------------------------------------";
-            TIME_TIC(FEATURE_TRACKING_TEST);
-            LOG(INFO) << "Freak Mode loop number: " << matches_rank;
-            feature_tracker_ptr_->DetectAndExtractFeature(hybrid_data.img_data.timestamp_ns,
-                                                hybrid_data.img_data.images[0],
-                                                &visual_frame_data_kp1,
-                                                &track_id_provider_);
-            visual_loop_interface_ptr_->ProjectDescriptors(visual_frame_data_kp1.descriptors,
-                                                           &visual_frame_data_kp1.projected_descriptors);
-            VLOG(0) << "Detected keypoints size: " << visual_frame_data_kp1.key_points.cols()
-                    << " descriptors size: " << visual_frame_data_kp1.projected_descriptors.cols()
-                    << " dims: " << visual_frame_data_kp1.projected_descriptors.rows();
-            
-            if (last_visual_frame_data_ptr == nullptr) {
-                last_visual_frame_data_ptr.reset(new common::VisualFrameData(visual_frame_data_kp1));
-                hybrid_buffer_.pop_front();
-                continue;
-            }         
-            matches_rank++;
-
-            cv::Mat descriptors_cv_kp1(cv::Size(visual_frame_data_kp1.projected_descriptors.rows(),
-                                            visual_frame_data_kp1.projected_descriptors.cols()), CV_32FC1,
-                                            visual_frame_data_kp1.projected_descriptors.data());
-
-            cv::Mat descriptors_cv_k(cv::Size(last_visual_frame_data_ptr.get()->projected_descriptors.rows(),
-                                last_visual_frame_data_ptr.get()->projected_descriptors.cols()), CV_32FC1,
-                                last_visual_frame_data_ptr.get()->projected_descriptors.data());
-
-            std::vector<cv::KeyPoint> key_points_k, key_points_kp1;
-
-            // assemble current frame
-            for (int i = 0; i < visual_frame_data_kp1.key_points.cols(); ++i) {
-                cv::KeyPoint cv_keypoint;
-                const auto& keypoints = visual_frame_data_kp1.key_points;
-                cv_keypoint.pt = cv::Point2f(static_cast<float>(keypoints(X, i)),
-                                             static_cast<float>(keypoints(Y, i)));
-                cv_keypoint.angle = keypoints(3, i);
-                cv_keypoint.size = keypoints(2, i);
-                cv_keypoint.response = keypoints(4, i);
-                key_points_kp1.push_back(cv_keypoint);
-            }
-
-            // assemble last frame
-            for (int i = 0; i < last_visual_frame_data_ptr.get()->key_points.cols(); ++i) {
-                cv::KeyPoint cv_keypoint;
-                const auto& keypoints = last_visual_frame_data_ptr.get()->key_points;
-                cv_keypoint.pt = cv::Point2f(static_cast<float>(keypoints(X, i)),
-                                             static_cast<float>(keypoints(Y, i)));
-                cv_keypoint.angle = keypoints(3, i);
-                cv_keypoint.size = keypoints(2, i);
-                cv_keypoint.response = keypoints(4, i);
-                key_points_k.push_back(cv_keypoint);
-            }
-
-            // match
-            std::vector<cv::DMatch> matches;
-            cv::BFMatcher matcher;
-            matcher.match(descriptors_cv_kp1, descriptors_cv_k, matches);
-
-            // Calculate the fundamental matrix to 
-            // filter the matches
-            std::vector<cv::Point2f> queryPoints, refPoints;
-
-            for (size_t i = 0; i < matches.size(); i++) {
-                queryPoints.push_back(key_points_kp1[matches[i].queryIdx].pt);
-                refPoints.push_back(key_points_k[matches[i].trainIdx].pt);
-            }
-
-            std::vector<uchar> inliers;
-            cv::findFundamentalMat(queryPoints, refPoints, inliers, cv::FM_RANSAC);
-            std::vector<cv::DMatch> goodMatches;
-            for (size_t i = 0u; i < inliers.size(); i++) {
-                if (inliers[i]) {
-                    goodMatches.push_back(matches[i]);
-                }
-            } 
-            good_matches_size += goodMatches.size();
-            LOG(INFO) << "Average good matches : " << good_matches_size / matches_rank;
-
-            // Visualization results
-            cv::Mat result;
-            cv::Mat img_k = *(last_visual_frame_data_ptr.get()->image_ptr.get());
-            cv::Mat img_kp1 = *(visual_frame_data_kp1.image_ptr.get()); 
-            cv::drawMatches(img_kp1, key_points_kp1, img_k, key_points_k, goodMatches, result);
-            std::string completed_feature_tracking_test_path = 
-                common::ConcatenateFilePathFrom(config_->feature_tracking_test_path, std::to_string(matches_rank));
-            cv::imwrite(completed_feature_tracking_test_path + ".png", result);
-            
-            // refresh last visual frame data
-            last_visual_frame_data_ptr.reset(new common::VisualFrameData(visual_frame_data_kp1));
-
-            std::unique_lock<std::mutex> lock(hybrid_buffer_mutex_);
-            hybrid_buffer_.pop_front();
-            TIME_TOC(FEATURE_TRACKING_TEST);
-        } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(30));
-        }
-
-        if (data_finish_ && img_buffer_.empty() && hybrid_buffer_.empty()) {
-            LOG(INFO) << "Feature tracking test thread can close now.";
-            break;
-        }
-    }
-    map_thread_done_[syscall(SYS_gettid)] = true;
-}
 
 }

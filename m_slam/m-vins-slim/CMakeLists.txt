@@ -109,7 +109,6 @@ include_directories(
         ${THIRD_PARTY_DIR}/aslam_cv2/aslam_cv_calibration/include
         ${THIRD_PARTY_DIR}/aslam_cv2/aslam_cv_cameras/include
         ${THIRD_PARTY_DIR}/aslam_cv2/aslam_cv_common/include
-        ${THIRD_PARTY_DIR}/aslam_cv2/aslam_cv_detector/include
         ${THIRD_PARTY_DIR}/aslam_cv2/aslam_cv_frames/include
         ${THIRD_PARTY_DIR}/aslam_cv2/aslam_cv_geometric_vision/include
         ${THIRD_PARTY_DIR}/aslam_cv2/aslam_cv_matcher/include

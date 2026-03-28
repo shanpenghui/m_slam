@@ -57,8 +57,6 @@ public:
     void LoopThread();
     void PoseGraphThread();
     void RelocInitThread();
-    void VocTrainingThread();
-    void FeatureTrackingTestThread();
 
     void AddImage(const common::ImageData& img_data);
     void AddDepth(const common::DepthData& depth_data);
@@ -114,7 +112,6 @@ private:
                             std::deque<SensorType>* sensor_buffer_ptr,
                             SensorType* find_data_ptr);
     void SyncSensorData();
-    void CollectImageDataOnly();
     bool EnoughMotionCheck(const common::State& prev_state,
                              const common::State& curr_state);
     template <typename DataType>
@@ -206,7 +203,6 @@ private:
                             common::PointCloud* scan_cloud_ptr);
     void ReCastrayAllRangeData();
     void ComputeVisualReprojectionErrorAndShow(const double* reloc_avg_error_pixel_ptr);
-    void SaveColmapModel();
 
     common::KeyFrameType main_sensor_type_;
 
@@ -228,9 +224,7 @@ private:
 
     std::unique_ptr<std::thread> reloc_init_thread_;
 
-    std::unique_ptr<std::thread> voc_training_thread_;
 
-    std::unique_ptr<std::thread> feature_tracking_testing_thread_;
 
     std::map<long, bool> map_thread_done_;
 

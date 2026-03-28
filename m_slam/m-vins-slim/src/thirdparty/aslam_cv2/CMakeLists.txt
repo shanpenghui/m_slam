@@ -28,8 +28,7 @@ add_library(aslam_cv ALIAS aslam_cv_${CMAKE_SYSTEM_PROCESSOR})
 set_target_properties(aslam_cv_${CMAKE_SYSTEM_PROCESSOR} PROPERTIES
         VERSION ${CMAKE_PROJECT_VERSION})
 
-if(USE_ROS2_API)
+
         install(TARGETS aslam_cv_${CMAKE_SYSTEM_PROCESSOR}
           DESTINATION lib/m_vins
         )
-endif()

@@ -42,9 +42,6 @@ void SlamConfig::LoadConfigFromFile() {
         kYamlFieldLogPath,
         &log_path);
 
-    SetValueBasedOnYamlKey(config_node_,
-        kYamlFieldFeatureTrackingTestPath,
-        &feature_tracking_test_path);
 
     SetValueBasedOnYamlKey(config_node_,
         kYamlFieldLogTimeTable,
@@ -188,17 +185,8 @@ void SlamConfig::LoadConfigFromFile() {
         kYamlFieldOutlierRejectionScale,
         &outlier_rejection_scale);
 
-    SetValueBasedOnYamlKey(config_node_,
-        kYamlFieldVocTrainMode,
-        &voc_train_mode);
     
-    SetValueBasedOnYamlKey(config_node_,
-        kYamlFieldFeatureTrackingTestMode,
-        &feature_tracking_test_mode);
 
-    SetValueBasedOnYamlKey(config_node_,
-        kYamlFieldSaveColmapModel,
-        &save_colmap_model);
 
     SetValueBasedOnYamlKey(config_node_,
         kYamlFieldUseIMU,
@@ -448,8 +436,6 @@ void SlamConfig::PrintConfigToGlog() const {
               << map_path;
     LOG(INFO) << kYamlFieldLogPath << ": "
               << log_path;
-    LOG(INFO) << kYamlFieldFeatureTrackingTestPath << ": "
-              << feature_tracking_test_path;
     LOG(INFO) << kYamlFieldMaskPath << ": "
               << mask_path;
     LOG(INFO) << kYamlFieldAssetsPath << ": "
@@ -466,12 +452,6 @@ void SlamConfig::PrintConfigToGlog() const {
               << tuning_mode;
     LOG(INFO) << kYamlFieldDoOctoMapping << ": "
               << do_octo_mapping;
-    LOG(INFO) << kYamlFieldVocTrainMode << ": "
-              << voc_train_mode;
-    LOG(INFO) << kYamlFieldFeatureTrackingTestMode << ": "
-              << feature_tracking_test_mode;
-    LOG(INFO) << kYamlFieldSaveColmapModel << ": "
-              << save_colmap_model;
     LOG(INFO) << kYamlFieldDoObstacleRemoval << ": "
               << do_obstacle_removal;
     LOG(INFO) << kYamlFieldContourLength << ": "

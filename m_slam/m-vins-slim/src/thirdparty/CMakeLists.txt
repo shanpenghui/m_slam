@@ -19,7 +19,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/aslam_cv2/aslam_cv_calibration/include
     ${PROJECT_SOURCE_DIR}/aslam_cv2/aslam_cv_cameras/include
     ${PROJECT_SOURCE_DIR}/aslam_cv2/aslam_cv_common/include
-    ${PROJECT_SOURCE_DIR}/aslam_cv2/aslam_cv_detector/include
     ${PROJECT_SOURCE_DIR}/aslam_cv2/aslam_cv_frames/include
     ${PROJECT_SOURCE_DIR}/aslam_cv2/aslam_cv_geometric_vision/include
     ${PROJECT_SOURCE_DIR}/aslam_cv2/aslam_cv_matcher/include
