@@ -59,3 +59,21 @@
 ### 回滚方式
 - 若要恢复旧逻辑：将 `src_visual_old/` 迁回 `src/`，并恢复旧版 `CMakeLists.txt` / `package.xml`。
 
+
+## 2026-03-28 / delete src_visual_old after manual confirmation
+
+### 背景与确认
+- 用户已明确确认：`确认删除 src_visual_old 并编译验证`。
+
+### 实施内容
+- 删除目录：`src_visual_old/`（历史备份实现）。
+
+### 删除后状态
+- 仅保留当前最小可编译实现：`src/m_vins_node.cc`。
+
+### 验证计划
+```bash
+source /opt/ros/humble/setup.bash
+cd /home/dev/new_m_slam_ws
+colcon build --symlink-install --packages-select m_vins
+```
