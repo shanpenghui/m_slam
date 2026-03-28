@@ -1,26 +1,26 @@
-# m-vins-slim
+# 项目名称
 
-基于原始 `m-vins` 工程，按当前仓库里实际启用的运行方式做了裁剪，只保留：
+本项目是美的集团AIIC机器人团队设计研发的基于多传感器融合的SLAM（simultaneous localization and mapping）系统。
+实现在室内环境下的环境感知建图、定位功能。
 
-- ROS2
-- 在线运行
-- `scan + odom` 主流程
-- `mapping / reloc / idle` 三种在线状态切换
-- 2D 栅格建图、定位、scan loop closure、mask 数据库
+### 前提条件
 
-已移除或停用的部分：
+安装和使用项目环境：
 
-- ROS1 / catkin 路径
-- 离线 rosbag 回放链路
-- 图像 / 深度 / IMU 订阅入口
-- CNN / RKNN / SuperPoint 资源
-- 当前未使用的多套标定与 mask
-- 备份配置、评测工具、未参与当前构建的第三方源码
+- Ubuntu18.04以上
+- ROS melodic或ROS2 foxy以上
+- git
 
-当前工程默认按 `cfg/launch_params.yaml` + `cfg/config_{idle,mapping,reloc}.yaml` 工作，
-并以 `cfg/calib_avaia_cleaner.yaml` 为当前标定。
+### 安装
 
-## Optimization Record
+1. 克隆项目仓库
 
-- 详细优化记录见：`docs/OPTIMIZATION_LOG.md`
-- 约定：后续每次精简/优化都在该文档追加“目标、改动明细、验证结果、可回滚点”。
+```bash
+cd ~/row_ws/src
+git clone https://git.midea.com/navigation/m-vins.git
+```
+
+2. 编译项目
+```bash
+catkin_make
+```

@@ -1,0 +1,31 @@
+slam_config:
+    ## Option.
+    load_option: 1
+    ##----------------------------MAIN CONFIG--------------------------------
+    ## The main sensor type (scan & visual & scan_visual).
+    main_sensor_type: scan
+    ## Window size in sliding window optimization.
+    window_size: 8
+    ## The yaml of calib file.
+    calib_yaml_config: /userdata/nav/install/share/m_vins/cfg/calib_avaia_cleaner.yaml
+    ## The asset file path for loading.
+    assets_path: /userdata/nav/install/assets/m_vins
+    ## SuperPoint model file name.
+    superpoint_model_file: superpoint_240_320_fp16_int8_pruned.rknn
+    ## The image mask for feature detecting.
+    mask_path: /userdata/nav/install/share/m_vins/cfg/mask_avaia_cleaner.png
+    ## Path to a localization map.
+    map_path: /userdata/nav/data/m_vins/map
+    ## Path to save log files.
+    log_path: /userdata/nav/log/m_vins
+    ## Path to save feature tracking test images
+    feature_tracking_test_path: /userdata/nav/data/m_vins/feature_tracking_test
+    ## Whether to use time table for efficiency check.
+    log_time_table: true
+    ## This ratio defines the number of
+    ## unmatched (from frame k to (k+1)) keypoints that will be tracked with
+    ## the lk tracker to the next frame. If we detect N keypoints in frame (k+1),
+    ## we track at most 'N times this ratio' keypoints to frame (k+1) with the
+    ## lk tracker. A value of 0 means that pure tracking by matching descriptors
+    ## will be used.
+    lk_candidates_ratio: 0

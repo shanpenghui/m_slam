@@ -1,0 +1,238 @@
+slam_config:
+    ## Option.
+    load_option: 1
+    ##----------------------------MAIN CONFIG--------------------------------
+    ## The main sensor type (scan & visual & scan_visual).
+    main_sensor_type: scan
+    ## Window size in sliding window optimization.
+    window_size: 8
+    ## The yaml of calib file.
+    calib_yaml_config: /userdata/nav/install/share/m_vins/cfg/calib_avaia_cleaner.yaml
+    ## The asset file path for loading.
+    assets_path: /userdata/nav/install/assets/m_vins
+    ## SuperPoint model file name.
+    superpoint_model_file: superpoint_240_320_fp16_int8_pruned.rknn
+    ## The image mask for feature detecting.
+    mask_path: /userdata/nav/install/share/m_vins/cfg/mask_avaia_cleaner.png
+    ## Path to a localization map.
+    map_path: /userdata/nav/data/m_vins/map
+    ## Path to save log files.
+    log_path: /userdata/nav/log/m_vins
+    ## Path to save feature tracking test images
+    feature_tracking_test_path: /userdata/nav/data/m_vins/feature_tracking_test
+    ## Playback rate of the data. Real-time corresponds to 1.0.
+    data_realtime_playback_rate: 5.0
+    ## Whether to use time table for efficiency check.
+    log_time_table: true
+    ## Whether to build map.
+    mapping: true
+    ## The map tuning mode (off & online & offline).
+    tuning_mode: online
+    ## If update global map in real time.
+    realtime_update_map: false
+    ## If perform octo mapping.
+    do_octo_mapping: false
+    ## If save colmap model for SFM.
+    save_colmap_model: false
+    ## Whether to run vocabulary training mode.
+    voc_train_mode: false
+    ## Whether to run feature tracking testing mode.
+    feature_tracking_test_mode: false
+    ## Whether to remove small obstacles when create map show.
+    do_obstacle_removal: true
+    ## The obstacles' bounding box lower than contour length should be removed.
+    contour_length: 4
+    ## Whether to do extrinsics online calibration.
+    do_ex_online_calib: false
+    ## Whether to do time drift online calibration.
+    do_time_online_calib: false
+    ##---------------------------IMU CONFIG----------------------------------
+    ## If use imu measurements for fusion.
+    use_imu: false
+    ## Gyroscope white noise (rad/s/sqrt(hz))
+    sigma_gyro: 0.01
+    ## Accelerometer white noise (m/s^2/sqrt(hz))
+    sigma_acc: 0.08
+    ## Gyroscope random walk (rad/s^2/sqrt(hz))
+    sigma_bg: 2.0e-5
+    ## Accelerometer random walk (m/s^3/sqrt(hz))
+    sigma_ba: 2.0e-5
+    ##---------------------------SCAN CONFIG----------------------------------
+    ## If perform fast correlative scan mathcing in odometry.
+    use_scan_matching: true
+    ## If use scan pointcloud
+    use_scan_pointcloud: false
+    ## The resolution of occupancy map.
+    resolution: 0.05
+    ## The scan noise sigma.
+    scan_sigma: 0.01
+    ## The max range data size in a submap, must be a multiple of max_submap_size.
+    range_size_per_submap: 80
+    ## The max submap size.
+    max_submap_size: 2
+    ## The min score in scan reloc for monitor count.
+    min_monitor_score: 0.5
+    ## The accpet score in reloc.
+    reloc_accept_score: 0.65
+    ##-------------------------VISUAL CONFIG---------------------------------
+    ## The zero velocity checking threshold of feature tracking diff.
+    ## only used in IMU propagation model.
+    zero_velocity_pixel_diff: 0.01
+    ## Max feature size in per optimization.
+    max_feature_size_in_opt: 30
+    ## The visual cost noise (pixel).
+    visual_sigma_pixel: 0.8
+    ## The depth noise 1 meter away from camera.
+    depth_sigma_short: 0.01
+    ## The depth noise 5 meter away from camera.
+    depth_sigma_mid: 0.1
+    ## The depth noise 10 meter away from camera.
+    depth_sigma_far: 0.3
+    ## If use RGB-D depth measurements for fusion.
+    use_depth: true
+    ## If fix depth estimate in optimization.
+    fix_depth: true
+    ## If perform outlier rejection.
+    do_outlier_rejection: false
+    ## Outlier rejection scale threshold of pixel.
+    outlier_rejection_scale: 6.0
+    ##---------------------FEATURE TRACKING CONFIG--------------------------
+    ## The feature detector type can be either gftt or fast.
+    feature_detector_type: gftt
+    ## If use grid in feature detection.
+    use_grids: false
+    ## Number of feature size to detect in per-frame.
+    num_feature_to_detect: 200
+    ## Number of grids in horizontal direction for feature detection.
+    detection_grids_horizontal: 8
+    ## Number of grids in vertical direction for feature detection.
+    detection_grids_vertical: 5
+    ## Min distance between any two of the detected corners, in pixels.
+    detection_non_max_suppression_radius: 10
+    ## Enable orientation normalization for FREAK feature detection.
+    freak_orientation_normalized: false
+    ## Enable scale normalization for FREAK feature detection. 
+    freak_scale_normalized: true
+    ## Scaling of the description pattern for FREAK feature detection.
+    freak_pattern_scale: 22.0
+    ## Number of octaves covered by the detected keypoints.
+    freak_num_octaves: 3
+    ## Pyramid decimation ratio, greater than 1. scaleFactor==2 means
+    ## the classical pyramid, where each next level has 4x less pixels
+    ## than the previous, but such a big scale factor will degrade
+    ## feature matching scores dramatically. On the other hand, too
+    ## close to 1 scale factor will mean that to cover certain scale
+    ## range you will need more pyramid levels and so the speed will suffer.
+    fast_scale_factor: 1.2
+    ## The number of pyramid levels. Higher number of pyramids will
+    ## increase scale invariance properties but will also lead
+    ## accumulations of keypoints in hotspots. Feature detection can
+    ## slow down considerably with higher numbers of pyramid levels.
+    fast_pyramid_levels: 1
+    ## Size of the patch used by the oriented BRIEF descriptor.
+    ## On smaller pyramid layers the perceived image area covered by
+    ## a feature will be larger.
+    fast_patch_size: 10
+    ## Keypoints with a score lower than this value will get removed.
+    ## This can be useful to remove keypoints of low quality or keypoints
+    ## that are associated with image noise.
+    fast_score_lower_bound: 1e-7
+    ## Threshold on difference between intensity of the central pixel and
+    ## pixels of a circle around this pixel.
+    fast_circle_threshold: 10
+    ## Quality level of corners found by GFTT. Default set to 0.01. Changes from
+    ## 0 to 1. This parameter determines the quality of chosen corners. The higher
+    ## this parameter, the higher quality corners you get.
+    gftt_quality_level: 0.01
+    ## Minimal distance between any two corner found by GFTT. Default set to 1.
+    gftt_min_distance: 20
+    ## The size of the neighborhood to use when calculating the corner response function.
+    ## Normally set to 3 or other odd numbers less than 3.
+    gftt_block_size: 3
+    ## Whether to use harris corner detector instead. If false, use Shi-Tomas corner detector.
+    gftt_use_harris_detector: false
+    ## The free parameter of harris corner detector. Only works when using harris corner detector.
+    gftt_k: 0.04
+    ## This ratio defines the number of
+    ## unmatched (from frame k to (k+1)) keypoints that will be tracked with
+    ## the lk tracker to the next frame. If we detect N keypoints in frame (k+1),
+    ## we track at most 'N times this ratio' keypoints to frame (k+1) with the
+    ## lk tracker. A value of 0 means that pure tracking by matching descriptors
+    ## will be used.
+    lk_candidates_ratio: 1.0
+    ## Status track length is the
+    ## track length since the status of the keypoint has changed (e.g. from lk
+    ## tracked to detected or the reverse). The lk tracker will not track
+    ## keypoints with longer status track length than this value.
+    lk_max_status_track_length: 10
+    ## Threshold that defines
+    ## how many times a detected feature has to be matched to be deemed
+    ## worthy to be tracked by the LK-tracker. A value of 1 means that it has
+    ## to be at least detected twice and matched once.
+    lk_track_detected_threshold: 1
+    ## Size of the search window at each pyramid level.
+    lk_window_size: 21
+    ## If set to 0, pyramids are not
+    ## used (single level), if set to 1, two levels are used, and so on.
+    ## If pyramids are passed to the input then the algorithm will use as many
+    ## levels as possible but not more than this threshold.
+    lk_max_pyramid_levels: 3
+    ## The algorithm
+    ## calculates the minimum eigenvalue of a 2x2 normal matrix of optical flow
+    ## equations, divided by number of pixels in a window. If this value is less
+    ## than this threshold, the corresponding feature is filtered out and its
+    ## flow is not processed, so it allows to remove bad points and get a
+    ## performance boost.
+    lk_min_eigenvalue_threshold: 0.001
+    ## Small search rectangle size for keypoint matches.
+    lk_small_search_distance_px: 10
+    ## Large search rectangle size for keypoint matches.
+    ## Only used if small search was unsuccessful.
+    lk_large_search_distance_px: 20
+    ## Keypoint uncertainty.
+    keypoint_uncertainty_px: 0.8
+    ## Enforce a minimal distance to the image border for feature tracking.
+    ## Hence, features can be detected close to the image border but
+    ## might not be tracked if the predicted location of the keypoint in the
+    ## next frame is closer to the image border than this value.
+    min_distance_to_image_border_px: 20
+    ## Ransac outlier percentage.
+    ransac_outlier_percentage: 0.5
+    ## Ransac outlier percentage.
+    ransac_success_probability: 0.995
+    ## RANSAC angle tolerance, should be 0 to 90 degrees.
+    ransac_angle_tolerance: 45
+    ## N-Point-RANSAC sample point size.
+    ransac_sample_point_size: 2
+    ##---------------------LOOP CLOSURE CONFIG--------------------------
+    ## Loop closure query frequency.
+    loop_frequency: 10.0
+    ## Scan loop closure international distance between submap.
+    scan_loop_inter_distance: 10.0
+    ## Type of scoring function to be used for scoring keyframes.
+    ## "accumulation" or "probabilistic".
+    scoring_function: probabilistic
+    ## Minimum time between matching images to allow a loop closure.
+    min_image_time_seconds: 2.0
+    ## The minimum number of matches needed to verify geometry.
+    min_verify_matches_num: 10
+    ## Fraction of best scoring keyframes/vertices
+    ## that are considered for covisibility filtering.
+    fraction_best_scores: 0.25
+    ## Number of neighbors to retrieve for loop-closure. -1 auto.
+    num_neighbors: -1
+    ## Number of nearest words to retrieve in the inverted index.
+    num_words_for_nn_search: 10
+    ## Minimum inlier count for loop closure.
+    min_inlier_count: 10
+    ## The max KNN search radius in feature kd-tree searching.
+    max_knn_radius: 0.3
+    ## KNN local search radius in pose searching.
+    local_search_radius: 2.0
+    ## KNN local search angles in pose searching.
+    local_search_angles: 90.0
+    ## Number of hardware threads to announce.
+    hardware_threads: 1
+    ## Max iters of pnp ransac.
+    pnp_num_ransac_iters: 50
+
