@@ -14,11 +14,7 @@ namespace loop_closure {
 using kd_tree_index::KDTreeIndex;
 class KDTreeIndexInterface : public IndexInterface {
 public:
-#ifdef USE_CNN_FEATURE
-  enum { kTargetDimensionality = 256 };
-#else
     enum { kTargetDimensionality = 10 };
-#endif
   typedef KDTreeIndex<kTargetDimensionality> Index;
 
   explicit KDTreeIndexInterface(const float knn_max_radius) {

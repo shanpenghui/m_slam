@@ -7,8 +7,6 @@ set(CMAKE_PROJECT_VERSION 0.1.0)
 message(STATUS "Project ${CMAKE_PROJECT_NAME} ${CMAKE_PROJECT_VERSION}")
 
 # Build CNN local feature.
-set(USE_CNN_FEATURE FALSE)
-
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
@@ -76,12 +74,6 @@ find_package(octomap REQUIRED)
 message(STATUS OCTOMAP_INCLUDE_DIRS ${OCTOMAP_INCLUDE_DIRS})
 message(STATUS OCTOMAP_LIBRARIES ${OCTOMAP_LIBRARIES})
 
-if(USE_CNN_FEATURE)
-    if (NOT ${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm*")
-      message(FATAL_ERROR "Operating system is not ARM, can not use CNN feature.")
-    endif()
-    add_definitions(-DUSE_CNN_FEATURE)
-endif()
 
 # Find ROS2 dependencies.
 find_package(ament_cmake REQUIRED)
@@ -167,12 +159,6 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/rviz/m-vins.rviz
   DESTINATION share/${PROJECT_NAME}/rviz
 )
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/inverted_multi_index_quantizer_freak.dat
-  DESTINATION assets/${PROJECT_NAME}
-)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/inverted_multi_index_quantizer_superpoint.dat
-  DESTINATION assets/${PROJECT_NAME}
-)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/superpoint_v1_fp16.rknn
   DESTINATION assets/${PROJECT_NAME}
 )
 

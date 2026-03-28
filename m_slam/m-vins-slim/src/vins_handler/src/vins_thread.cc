@@ -660,13 +660,8 @@ void VinsHandler::VocTrainingThread() {
     LOG(INFO) << "Vocabulary training thread pid: " << syscall(SYS_gettid);
     map_thread_done_[syscall(SYS_gettid)] = false;
 
-#ifdef USE_CNN_FEATURE
-    int target_dimensionality = 256;
-    int half_target_dimensionality = 128;
-#else
     int target_dimensionality = 10;
     int half_target_dimensionality = 5;
-#endif
 
     cv::Mat all_desc(0, target_dimensionality, CV_32FC1);
     while (true) {
@@ -677,19 +672,12 @@ void VinsHandler::VocTrainingThread() {
             hybrid_buffer_.pop_front();
             common::VisualFrameData visual_frame_data;
 
-#ifdef USE_CNN_FEATURE
-            feature_tracker_ptr_->InferFeature(hybrid_data.img_data.timestamp_ns,
-                                               hybrid_data.img_data.images[0],
-                                               &visual_frame_data,
-                                               &track_id_provider_);
-#else 
             feature_tracker_ptr_->DetectAndExtractFeature(hybrid_data.img_data.timestamp_ns,
                                                 hybrid_data.img_data.images[0],
                                                 &visual_frame_data,
                                                 &track_id_provider_);
             visual_loop_interface_ptr_->ProjectDescriptors(visual_frame_data.descriptors,
                                                            &visual_frame_data.projected_descriptors);
-#endif
 
             VLOG(0) << "Detected keypoints size: " << visual_frame_data.key_points.cols()
                     << " descriptors size: " << visual_frame_data.projected_descriptors.cols()
@@ -719,21 +707,12 @@ void VinsHandler::VocTrainingThread() {
             cv::kmeans(all_desc_right, K, labels_right, cv::TermCriteria(), 2, cv::KMEANS_PP_CENTERS, clusters_right);
             VLOG(0) << "End to train right half words.";
 
-#ifdef USE_CNN_FEATURE
             std::string complete_new_asset_file_name = 
                 common::ConcatenateFilePathFrom(config_->assets_path,
                 "inverted_multi_index_quantizer_superpoint_new.dat");
 
             std::ofstream out_stream(complete_new_asset_file_name,
                                      std::ios_base::binary);
-#else
-            std::string complete_new_asset_file_name = 
-                common::ConcatenateFilePathFrom(config_->assets_path,
-                "inverted_multi_index_quantizer_superpoint_new.dat");
-
-            std::ofstream out_stream(complete_new_asset_file_name,
-                                     std::ios_base::binary);
-#endif
 
             int serialized_version = 100;
             common::Serialize(serialized_version, &out_stream);
@@ -775,13 +754,6 @@ void VinsHandler::FeatureTrackingTestThread() {
 
             LOG(INFO) << "----------------------------------------";
             TIME_TIC(FEATURE_TRACKING_TEST);
-#ifdef USE_CNN_FEATURE
-            LOG(INFO) << "Superpoint Mode loop number: " << matches_rank;
-            feature_tracker_ptr_->InferFeature(hybrid_data.img_data.timestamp_ns,
-                                               hybrid_data.img_data.images[0],
-                                               &visual_frame_data_kp1,
-                                               &track_id_provider_);
-#else
             LOG(INFO) << "Freak Mode loop number: " << matches_rank;
             feature_tracker_ptr_->DetectAndExtractFeature(hybrid_data.img_data.timestamp_ns,
                                                 hybrid_data.img_data.images[0],
@@ -789,7 +761,6 @@ void VinsHandler::FeatureTrackingTestThread() {
                                                 &track_id_provider_);
             visual_loop_interface_ptr_->ProjectDescriptors(visual_frame_data_kp1.descriptors,
                                                            &visual_frame_data_kp1.projected_descriptors);
-#endif
             VLOG(0) << "Detected keypoints size: " << visual_frame_data_kp1.key_points.cols()
                     << " descriptors size: " << visual_frame_data_kp1.projected_descriptors.cols()
                     << " dims: " << visual_frame_data_kp1.projected_descriptors.rows();

@@ -40,11 +40,6 @@ set(SOURCE_FILES
         src/sensor_propagator/sensor_propagator.cc
         )
 
-if(USE_CNN_FEATURE)
-        set(SOURCE_FILES
-            ${SOURCE_FILES}
-            src/feature_tracker/super_point_infer.cc)
-endif()
 
 add_library(vins_core_${CMAKE_SYSTEM_PROCESSOR} SHARED
         ${SOURCE_FILES}

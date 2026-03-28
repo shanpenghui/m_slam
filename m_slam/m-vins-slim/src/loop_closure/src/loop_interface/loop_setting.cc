@@ -28,15 +28,9 @@ LoopSettings::LoopSettings(const common::SlamConfigPtr& config)
     CHECK_GE(num_nearest_neighbors, -1);
 
     SetKeyframeScoringFunctionType(config->scoring_function);
-#ifdef USE_CNN_FEATURE
-    projected_quantizer_filename = common::ConcatenateFilePathFrom(
-                asserts_file_path,
-                "inverted_multi_index_quantizer_superpoint.dat");
-#else
     projected_quantizer_filename = common::ConcatenateFilePathFrom(
                 asserts_file_path,
                 "inverted_multi_index_quantizer_freak.dat");
-#endif
 }
 
 void LoopSettings::SetKeyframeScoringFunctionType(

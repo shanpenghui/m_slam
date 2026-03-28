@@ -12,42 +12,15 @@ set(YAML_LIBRARIES ${YAML_LIBRARIES} PARENT_SCOPE)
 message(STATUS YAML_INCLUDE_DIR ${YAML_INCLUDE_DIR})
 message(STATUS YAML_LIBRARIES ${YAML_LIBRARIES})
 
-# Include RKNN API.
-set(RKNN_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/rknn")
-set(RKNN_LIBRARIES ${PROJECT_SOURCE_DIR}/rknn/${CMAKE_SYSTEM_PROCESSOR}/librknnrt.so)
-# Set parent scope variable.
-set(RKNN_INCLUDE_DIR ${RKNN_INCLUDE_DIR} PARENT_SCOPE)
-set(RKNN_LIBRARIES ${RKNN_LIBRARIES} PARENT_SCOPE)
-message(STATUS RKNN_INCLUDE_DIR ${RKNN_INCLUDE_DIR})
-message(STATUS RKNN_LIBRARIES ${RKNN_LIBRARIES})
-
-if (USE_CNN_FEATURE)
-        set (THIRD_LIB_INCLUDE_DIR
-                ${YAML_INCLUDE_DIR}
-                ${RKNN_INCLUDE_DIR}
-                PARENT_SCOPE
-        )
-        set (THIRD_LIB_LIBRARIES
-                ${YAML_LIBRARIES}
-                ${RKNN_LIBRARIES}
-                PARENT_SCOPE
-        )
-else()
-        set (THIRD_LIB_INCLUDE_DIR
-                ${YAML_INCLUDE_DIR}
-                PARENT_SCOPE
-        )
-        set (THIRD_LIB_LIBRARIES
-                ${YAML_LIBRARIES}
-                PARENT_SCOPE
-        )
-endif()
+set(THIRD_LIB_INCLUDE_DIR
+        ${YAML_INCLUDE_DIR}
+        PARENT_SCOPE
+)
+set(THIRD_LIB_LIBRARIES
+        ${YAML_LIBRARIES}
+        PARENT_SCOPE
+)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp/${CMAKE_SYSTEM_PROCESSOR}
         DESTINATION lib/m_vins
 )
-if (USE_CNN_FEATURE)
-        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rknn/${CMAKE_SYSTEM_PROCESSOR}
-                DESTINATION lib/m_vins
-        )
-endif()

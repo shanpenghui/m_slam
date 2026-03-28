@@ -32,11 +32,7 @@ GyroTwoFrameMatcher::GyroTwoFrameMatcher(
       frame_kp1_(frame_kp1), frame_k_(frame_k),
       predicted_keypoint_positions_kp1_(predicted_keypoint_positions_kp1),
       prediction_success_(prediction_success),
-#ifdef USE_CNN_FEATURE
-      kDescriptorSizeBytes_(frame_kp1.GetProjectedDescriptorSizeBytes()),
-#else
       kDescriptorSizeBytes_(frame_kp1.GetDescriptorSizeBytes()),
-#endif
       kNumPointsKp1_(static_cast<int>(frame_kp1.key_points.cols())),
       kNumPointsK_(static_cast<int>(frame_k.key_points.cols())),
       kImageHeight_(image_height),
@@ -47,22 +43,11 @@ GyroTwoFrameMatcher::GyroTwoFrameMatcher(
       large_search_distance_px_(config->lk_large_search_distance_px) {
     CHECK_GT(frame_kp1.key_points.cols(), 0u);
     CHECK_GT(frame_k.key_points.cols(), 0u);
-#ifdef USE_CNN_FEATURE
-    CHECK_GT(frame_kp1.projected_descriptors.cols(), 0);
-    CHECK_GT(frame_k.projected_descriptors.cols(), 0);
-#else
     CHECK_GT(frame_kp1.descriptors.cols(), 0);
     CHECK_GT(frame_k.descriptors.cols(), 0);
-#endif
     CHECK_GT(frame_kp1.key_points.cols(), 0u);
     CHECK_GT(frame_k.key_points.cols(), 0u);
     CHECK_NOTNULL(matches_kp1_k_)->clear();
-#ifdef USE_CNN_FEATURE
-    CHECK_EQ(kNumPointsKp1_, frame_kp1.projected_descriptors.cols()) <<
-        "Number of keypoints and descriptors in frame k+1 is not the same.";
-    CHECK_EQ(kNumPointsK_, frame_k.projected_descriptors.cols()) <<
-        "Number of keypoints and descriptors in frame k is not the same.";
-#else
     CHECK_EQ(kNumPointsKp1_, frame_kp1.descriptors.cols()) <<
         "Number of keypoints and descriptors in frame k+1 is not the same.";
     CHECK_EQ(kNumPointsK_, frame_k.descriptors.cols()) <<
@@ -70,7 +55,6 @@ GyroTwoFrameMatcher::GyroTwoFrameMatcher(
     CHECK_LE(kDescriptorSizeBytes_ * 8, 512u) << "Usually binary descriptors' size "
             "is less or equal to 512 bits. Adapt the following check if this "
             "framework uses larger binary descriptors.";
-#endif
     CHECK_GT(kImageHeight_, 0u);
     CHECK_EQ(static_cast<int>(iteration_processed_keypoints_kp1_.size()),
                 kNumPointsKp1_);
@@ -91,38 +75,21 @@ GyroTwoFrameMatcher::GyroTwoFrameMatcher(
 
 void GyroTwoFrameMatcher::Initialize() {
     // Prepare descriptors for efficient matching.
-#ifdef USE_CNN_FEATURE
-    const common::DescriptorsMatF32& descriptors_kp1 =
-        frame_kp1_.projected_descriptors;
-    const common::DescriptorsMatF32& descriptors_k =
-        frame_k_.projected_descriptors;
-#else
     const common::DescriptorsMatUint8& descriptors_kp1 =
         frame_kp1_.descriptors;
     const common::DescriptorsMatUint8& descriptors_k =
         frame_k_.descriptors;
-#endif
 
     for (int descriptor_kp1_idx = 0; descriptor_kp1_idx < kNumPointsKp1_;
             ++descriptor_kp1_idx) {
-#ifdef USE_CNN_FEATURE
-        const Eigen::VectorXf& desc = descriptors_kp1.col(descriptor_kp1_idx);
-        descriptors_kp1_wrapped_.emplace_back(desc);
-#else
         descriptors_kp1_wrapped_.emplace_back(
             &(descriptors_kp1.coeffRef(0, descriptor_kp1_idx)), kDescriptorSizeBytes_);
-#endif
     }
 
     for (int descriptor_k_idx = 0; descriptor_k_idx < kNumPointsK_;
             ++descriptor_k_idx) {
-#ifdef USE_CNN_FEATURE
-        const Eigen::VectorXf& desc = descriptors_k.col(descriptor_k_idx);
-        descriptors_k_wrapped_.push_back(desc);
-#else
         descriptors_k_wrapped_.emplace_back(
             &(descriptors_k.coeffRef(0, descriptor_k_idx)), kDescriptorSizeBytes_);
-#endif
     }
 
     // Sort keypoints of frame (k+1) from small to large y coordinates.
@@ -182,13 +149,6 @@ void GyroTwoFrameMatcher::MatchKeypoint(const int idx_k) {
     int n_processed_corners = 0;
     KeyPointIterator it_best;
 
-#ifdef USE_CNN_FEATURE
-    const static float kMaxDistance = 1.f;
-    float best_score = kMaxDistance * kMatchingThresholdBitsRatioRelaxed;
-    float distance_best = kMaxDistance;
-    float distance_second_best = kMaxDistance;
-    const Eigen::VectorXf &descriptor_k = descriptors_k_wrapped_[idx_k];
-#else
     const static unsigned int kMaxDistance = 8 * kDescriptorSizeBytes_;
     int best_score = static_cast<int>(
         kMaxDistance * kMatchingThresholdBitsRatioRelaxed);
@@ -196,7 +156,6 @@ void GyroTwoFrameMatcher::MatchKeypoint(const int idx_k) {
     unsigned int distance_second_best = kMaxDistance + 1;
     const aslam::common::FeatureDescriptorConstRef &descriptor_k =
         descriptors_k_wrapped_[idx_k];
-#endif
 
     Eigen::Vector2d predicted_keypoint_position_kp1 =
         predicted_keypoint_positions_kp1_.block<2, 1>(0, idx_k);
@@ -224,19 +183,11 @@ void GyroTwoFrameMatcher::MatchKeypoint(const int idx_k) {
         CHECK_LT(it->channel_index, kNumPointsKp1_);
         CHECK_GE(it->channel_index, 0);
 
-#ifdef USE_CNN_FEATURE
-        const Eigen::VectorXf &descriptor_kp1 =
-            descriptors_kp1_wrapped_[it->channel_index];
-
-        float distance = GetL1Different(descriptor_k, descriptor_kp1);
-        float current_score = kMaxDistance - distance;        
-#else
         const aslam::common::FeatureDescriptorConstRef &descriptor_kp1 =
             descriptors_kp1_wrapped_[it->channel_index];
         unsigned int distance =
             aslam::common::GetNumBitsDifferent(descriptor_k, descriptor_kp1);
         int current_score = kMaxDistance - distance;
-#endif
 
         if (current_score > best_score) {
             best_score = current_score;
@@ -281,18 +232,11 @@ void GyroTwoFrameMatcher::MatchKeypoint(const int idx_k) {
             }
             CHECK_LT(it->channel_index, kNumPointsKp1_);
             CHECK_GE(it->channel_index, 0);
-#ifdef USE_CNN_FEATURE
-            const Eigen::VectorXf &descriptor_kp1 =
-                descriptors_kp1_wrapped_[it->channel_index];
-            float distance = GetL1Different(descriptor_k, descriptor_kp1);
-            float current_score = kMaxDistance - distance;
-#else
             const aslam::common::FeatureDescriptorConstRef &descriptor_kp1 =
                 descriptors_kp1_wrapped_[it->channel_index];
             unsigned int distance =
                 aslam::common::GetNumBitsDifferent(descriptor_k, descriptor_kp1);
             int current_score = kMaxDistance - distance;
-#endif
             if (current_score > best_score) {
                 best_score = current_score;
                 distance_second_best = distance_best;

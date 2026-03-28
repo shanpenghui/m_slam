@@ -11,17 +11,6 @@ FeatureTrackerBase::FeatureTrackerBase(
         const common::SlamConfigPtr& config)
     : cameras_(cameras),
       config_(config) {
-#ifdef USE_CNN_FEATURE
-    SuperPointConfig superpoint_config = CreateSuperPointConfig(config);
-    superpoint_infer_ptr_.reset(new SuperPoint(superpoint_config));
-    LOG(WARNING) << "Start building SuperPoint mode...";
-    if (!superpoint_infer_ptr_->build()) {
-        LOG(FATAL) << "Error in SuperPoint building engine, model file path: "
-                   << superpoint_config.model_name;
-    } else {
-        LOG(WARNING) << "SuperPoint building success.";
-    }
-#endif
     VLOG(0) << "Load mask from path: " << config_->mask_path;
     cv::Mat mask;
     mask = cv::imread(config_->mask_path, cv::IMREAD_GRAYSCALE);
@@ -30,93 +19,6 @@ FeatureTrackerBase::FeatureTrackerBase(
     feature_extractor_.reset(new FeatureExtractor(config_));
 }
 
-#ifdef USE_CNN_FEATURE
-SuperPointConfig FeatureTrackerBase::CreateSuperPointConfig(
-    const common::SlamConfigPtr& config) {
-    SuperPointConfig superpoint_config;
-    superpoint_config.model_name = common::ConcatenateFilePathFrom(
-        config->assets_path, config->superpoint_model_file);
-    superpoint_config.max_keypoints = config->num_feature_to_detect;
-    superpoint_config.remove_borders = 4;
-    superpoint_config.keypoint_threshold = 0.002;
-    return superpoint_config;
-}
-
-void FeatureTrackerBase::InferFeature(
-    const uint64 timestamp_ns,
-    const common::CvMatConstPtr& img,
-    common::VisualFrameData* visual_frame_data_ptr,
-    int* track_id_provider_ptr) {
-    common::VisualFrameData& visual_frame_data =
-            *CHECK_NOTNULL(visual_frame_data_ptr);
-    int& track_id_provider =
-            *CHECK_NOTNULL(track_id_provider_ptr);  
-
-    cv::Mat image_gray;
-    if (img->type() == CV_8UC3) {
-        cv::cvtColor(*img, image_gray, cv::COLOR_BGR2GRAY);
-    } else if (img->type() == CV_8UC1) {
-        image_gray = *img;
-    } else {
-        LOG(FATAL) << "Unsupport image type.";
-    }
-
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> feature_points;
-    if (superpoint_infer_ptr_->GetSuperPointMode() == SuperPointMode::CombinedSuperPoint) {
-        std::vector<cv::KeyPoint> keypoints;
-        keypoints = feature_detector_->Detect(image_gray);
-        if (!superpoint_infer_ptr_->infer(image_gray, feature_points, &keypoints)) {
-            LOG(WARNING) << "SuperPoint inference failure in time: " << timestamp_ns;
-            return;
-        }
-        visual_frame_data.SetKeyPoints(keypoints,
-                                       config_->keypoint_uncertainty_px);
-    } else if (superpoint_infer_ptr_->GetSuperPointMode() == SuperPointMode::SuperPoint) {
-        if (!superpoint_infer_ptr_->infer(image_gray, feature_points)) {
-            LOG(WARNING) << "SuperPoint inference failure in time: " << timestamp_ns;
-            return;
-        }
-        visual_frame_data.SetKeyPoints(feature_points,
-                                       config_->keypoint_uncertainty_px);
-    } else {
-        LOG(ERROR) << "ERROR: SuperPoint mode has not initialized";
-        return;
-    }
-
-    // Fill visual frame data.
-    visual_frame_data.timestamp_ns = timestamp_ns;
-    // NOTE. Do not initialize track_lengths status in there,
-    // because of the keypoint size maybe changed in feature track step.
-    visual_frame_data.SetDescriptors(feature_points);
-    visual_frame_data.GenerateTrackIds(&track_id_provider);
-    visual_frame_data.image_ptr = img;
-
-    if (superpoint_infer_ptr_->GetSuperPointMode() == SuperPointMode::SuperPoint) {    
-        RestoreKeypoints(&visual_frame_data, 
-                         superpoint_infer_ptr_->Width(),
-                         superpoint_infer_ptr_->Height());
-    }
-}
-
-void FeatureTrackerBase::RestoreKeypoints(
-    common::VisualFrameData* frame_data_ptr,
-    const int infer_img_width,
-    const int infer_img_height) {
-    common::VisualFrameData& frame_data =
-            *CHECK_NOTNULL(frame_data_ptr);
-    const int raw_width = frame_data.image_ptr->cols;
-    const int raw_height = frame_data.image_ptr->rows;
-    const double down_rate_w = static_cast<double>(raw_width) /
-        static_cast<double>(infer_img_width);
-    const double down_rate_h = static_cast<double>(raw_height) /
-        static_cast<double>(infer_img_height);
-    
-    for (int i = 0; i < frame_data.key_points.cols(); ++i) {
-        frame_data.key_points(X, i) = frame_data.key_points(X, i) * down_rate_w;
-        frame_data.key_points(Y, i) = frame_data.key_points(Y, i) * down_rate_h;
-    }
-}
-#endif
 
 void FeatureTrackerBase::DetectAndExtractFeatureImpl(
         const common::CvMatConstPtr& img,

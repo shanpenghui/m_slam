@@ -139,17 +139,10 @@ private:
     // to the ordering of the keypoint/descriptors in
     // the respective channels.
     common::FrameToFrameMatchesWithScore *const matches_kp1_k_;
-#ifdef USE_CNN_FEATURE
-    // Descriptors of frame (k+1).
-    common::EigenVectorXfVec descriptors_kp1_wrapped_;
-    // Descriptors of frame k.
-    common::EigenVectorXfVec descriptors_k_wrapped_;
-#else
     // Descriptors of frame (k+1).
     std::vector<aslam::common::FeatureDescriptorConstRef> descriptors_kp1_wrapped_;
     // Descriptors of frame k.
     std::vector<aslam::common::FeatureDescriptorConstRef> descriptors_k_wrapped_;
-#endif
     // Keypoints of frame (k+1) sorted from small to large y coordinates.
     Aligned<std::vector, KeypointData> keypoints_kp1_sorted_by_y_;
     // corner_row_LUT[i] is the number of keypoints that has y position

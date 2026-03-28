@@ -317,11 +317,6 @@ void SlamConfig::LoadConfigFromFile() {
         kYamlFieldLkCandidatesRatio,
         &lk_candidates_ratio);
 
-#ifdef USE_CNN_FEATURE
-    CHECK_EQ(lk_candidates_ratio, 0.0) <<
-        "Can not perform lk tracking if use CNN feature, " <<
-        "please set lk_candidates_ratio as 0.";
-#endif
 
     SetValueBasedOnYamlKey(config_node_,
         kYamlFieldLkMaxStatusTrackLength,

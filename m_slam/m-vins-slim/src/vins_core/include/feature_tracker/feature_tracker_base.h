@@ -4,9 +4,6 @@
 #include <aslam/cameras/ncamera.h>
 
 #include "data_common/visual_structures.h"
-#ifdef USE_CNN_FEATURE
-#include "feature_tracker/super_point_infer.h"
-#endif
 #include "feature_tracker/feature_detector.h"
 #include "feature_tracker/feature_extractor.h"
 
@@ -16,20 +13,6 @@ class FeatureTrackerBase {
 public:
     virtual ~FeatureTrackerBase() = default;
 
-#ifdef USE_CNN_FEATURE
-    SuperPointConfig CreateSuperPointConfig(
-            const common::SlamConfigPtr& config);
-
-    void RestoreKeypoints(common::VisualFrameData* frame_data, 
-                          const int infer_img_width,
-                          const int infer_img_height);
-
-    virtual void InferFeature(
-            const uint64 timestamp_ns,
-            const common::CvMatConstPtr& img,
-            common::VisualFrameData* visual_frame_data_ptr,
-            int* track_id_provider_ptr);
-#endif
     virtual void DetectAndExtractFeature(
             const uint64 timestamp_ns,
             const common::CvMatConstPtr& img,
@@ -77,9 +60,6 @@ protected:
 
     const aslam::NCamera::Ptr cameras_;
     const common::SlamConfigPtr config_;
-#ifdef USE_CNN_FEATURE
-    std::unique_ptr<SuperPoint> superpoint_infer_ptr_;
-#endif
     std::unique_ptr<FeatureDetector> feature_detector_;
     std::unique_ptr<FeatureExtractor> feature_extractor_;
 

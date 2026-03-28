@@ -8,11 +8,7 @@
 #include "data_common/visual_structures.h"
 
 namespace loop_closure {
-#ifdef USE_CNN_FEATURE
-constexpr int kDescriptorDim = 256;
-#else
 constexpr int kDescriptorDim = 10;
-#endif
 
 class SummaryMap {
 public:

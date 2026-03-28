@@ -880,17 +880,10 @@ double VinsHandler::TrackFeature(const common::SyncedHybridSensorData& hybrid_da
     for (size_t cam_idx = 0u; cam_idx < hybrid_data.img_data.images.size(); ++cam_idx) {
         common::VisualFrameData visual_frame_data_kp1;
         TIME_TIC(FEATURE_DETECTION_EXTRACTION);
-#ifdef USE_CNN_FEATURE
-        feature_tracker_ptr_->InferFeature(hybrid_data.img_data.timestamp_ns,
-                                           hybrid_data.img_data.images[cam_idx],
-                                           &visual_frame_data_kp1,
-                                           &track_id_provider_);
-#else
         feature_tracker_ptr_->DetectAndExtractFeature(hybrid_data.img_data.timestamp_ns,
                                                       hybrid_data.img_data.images[cam_idx],
                                                       &visual_frame_data_kp1,
                                                       &track_id_provider_);
-#endif
         TIME_TOC(FEATURE_DETECTION_EXTRACTION);
 
         TIME_TIC(FEATURE_MATCHING);
@@ -1001,7 +994,6 @@ double VinsHandler::TrackFeature(const common::SyncedHybridSensorData& hybrid_da
                    visual_frame_data_kp1.key_points.cols());
         CHECK_EQ(visual_frame_data_kp1.track_ids.rows(),
                    visual_frame_data_kp1.track_lengths.rows());
-#ifndef USE_CNN_FEATURE
         CHECK_EQ(visual_frame_data_kp1.track_ids.rows(),
                  visual_frame_data_kp1.descriptors.cols());
         if (config_->mapping || reloc_) {
@@ -1014,10 +1006,6 @@ double VinsHandler::TrackFeature(const common::SyncedHybridSensorData& hybrid_da
             visual_frame_data_kp1.projected_descriptors.resize(0,
                                                                visual_frame_data_kp1.descriptors.cols());
         }
-#else
-        CHECK_EQ(visual_frame_data_kp1.track_ids.rows(),
-                 visual_frame_data_kp1.projected_descriptors.cols());
-#endif
         common::VisualFrameDataPtr visual_frame_data_kp1_ptr =
                 std::make_shared<common::VisualFrameData>(visual_frame_data_kp1);
         const int vertex_id = key_frame_kp1.keyframe_id;

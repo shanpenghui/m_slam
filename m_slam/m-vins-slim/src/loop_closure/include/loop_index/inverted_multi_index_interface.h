@@ -11,11 +11,7 @@ namespace loop_closure {
 
 class InvertedMultiIndexVocabulary {
  public:
-#ifdef USE_CNN_FEATURE
-  enum { kTargetDimensionality = 256 };
-#else
   enum { kTargetDimensionality = 10 };
-#endif
   enum { kSerializationVersion = 100 };
   InvertedMultiIndexVocabulary() {
     target_dimensionality_ = kTargetDimensionality;
@@ -37,9 +33,7 @@ class InvertedMultiIndexVocabulary {
     int serialized_target_dimensionality;
     common::Deserialize(&serialized_target_dimensionality, in_stream);
     CHECK_EQ(serialized_target_dimensionality, target_dimensionality_);
-#ifndef USE_CNN_FEATURE
     common::Deserialize(&projection_matrix_, in_stream);
-#endif
     common::Deserialize(&words_first_half_, in_stream);
     common::Deserialize(&words_second_half_, in_stream);
   }
@@ -52,11 +46,7 @@ class InvertedMultiIndexVocabulary {
 
 class InvertedMultiIndexInterface : public IndexInterface {
 public:
-#ifdef USE_CNN_FEATURE
-    enum { kSubSpaceDimensionality = 128 };
-#else
     enum { kSubSpaceDimensionality = 5 };
-#endif
     typedef InvertedMultiIndex<kSubSpaceDimensionality> Index;
 
     InvertedMultiIndexInterface(const std::string& quantizer_filename,

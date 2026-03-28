@@ -242,11 +242,7 @@ void GyroTracker::ComputeLKCandidates(
     }
 
     const size_t kNumPointsKp1 = frame_kp1.track_ids.rows();
-#ifdef USE_CNN_FEATURE
-    CHECK_EQ(static_cast<int>(kNumPointsKp1), frame_kp1.projected_descriptors.cols());
-#else
     CHECK_EQ(static_cast<int>(kNumPointsKp1), frame_kp1.descriptors.cols());
-#endif
     const size_t kLkNumCandidatesBeforeCutoff =
         indices_detected_and_tracked.size() + indices_lktracked.size();
     const size_t kLkNumMaxCandidates = static_cast<size_t>(

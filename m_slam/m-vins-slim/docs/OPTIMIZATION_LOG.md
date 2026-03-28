@@ -11,7 +11,7 @@
 - [x] **ROS1 条件分支**：移除所有 `#ifdef USE_ROS2 ... #else(ROS1) ... #endif`、CMake catkin 逻辑、package.xml ROS1 依赖
   - 提交：`7baa547`
   - 验证：改动前后二进制产物 MD5 完全一致（编译器输出字节级相同）
-- [ ] **USE_CNN_FEATURE 分支**：`super_point_infer.cc/.h`、`#ifdef USE_CNN_FEATURE` 散布代码（~30处）、RKNN SDK（`third_lib/rknn/`）、SuperPoint 模型（`assets/superpoint_*.rknn` ~9.5MB）、`assets/inverted_multi_index_quantizer_superpoint.dat` (~1MB)
+- [x] **USE_CNN_FEATURE 分支**：`super_point_infer.cc/.h`、`#ifdef USE_CNN_FEATURE` 散布代码（~30处）、RKNN SDK（`third_lib/rknn/`）、SuperPoint 模型（`assets/superpoint_*.rknn` ~9.5MB）、`assets/inverted_multi_index_quantizer_superpoint.dat` (~1MB)
 - [ ] **Visual / ScanVisual 链路**（量最大）：`src/vins_core/src/feature_tracker/` 整目录（8文件）、`camera_reprojection_cost.cc`、`visual_loop_interface.cc`、`image_interface.cc`、`vins_handler` 中 Visual/ScanVisual 分支、非当前设备的标定/mask 文件（`calib_d435/euroc/uhumans2.yaml`、`mask_d435/euroc/uhumans2.png`）、`src/thirdparty/xfeatures2d/`
 - [ ] **IMU 融合**（`use_imu: false`）：`imu_propagation_cost.cc`、`imu_propagator.cc`、`imu_interface.cc`、`vins_handler` 中 IMU 相关逻辑
 - [ ] **OctoMap**（`do_octo_mapping: false`）：`src/octomap_core/` 整个模块（3文件）、`vins_handler` 中 OctoMapper 逻辑、`tools/octomap2ply/`
@@ -67,4 +67,54 @@
 #### 回滚方式
 ```bash
 git revert 7baa547
+```
+
+### 2026-03-28 / Remove USE_CNN_FEATURE conditional code, assets, and RKNN SDK
+
+**提交**：`<pending>` `refactor(m-vins-slim): remove CNN feature code, RKNN SDK, and SuperPoint assets`
+
+#### 背景
+- `USE_CNN_FEATURE` 编译开关始终为 FALSE，CNN/SuperPoint 特征提取从未启用。
+- 相关代码、模型文件和 RKNN SDK 占用约 10.5MB 空间，增加仓库体积和维护负担。
+
+#### 实施内容
+
+**1. 源码条件分支**
+- 移除所有 `#ifdef USE_CNN_FEATURE ... #endif` 条件块（保留 `#else`/`#ifndef` 中的非 CNN 代码）
+- 涉及 **12 个源文件**，共移除 **29 个 CNN 条件块**
+- 受影响模块：vins_common、vins_handler、vins_core/feature_tracker、loop_closure
+
+**2. 删除的源码文件**
+- `src/vins_core/src/feature_tracker/super_point_infer.cc`
+- `src/vins_core/include/feature_tracker/super_point_infer.h`
+
+**3. 删除的资源文件**（共 ~10.5MB）
+- `assets/superpoint_240_320_fp16_int8.rknn` (~3.2MB)
+- `assets/superpoint_240_320_fp16_int8_pruned.rknn` (~3.2MB)
+- `assets/superpoint_v1_fp16.rknn` (~3.0MB)
+- `assets/inverted_multi_index_quantizer_superpoint.dat` (~1.0MB)
+
+**4. 删除的第三方库**
+- `third_lib/rknn/` 整个目录（RKNN SDK：头文件 + aarch64/x86_64 .so）
+
+**5. CMakeLists.txt**
+- 顶层：移除 `set(USE_CNN_FEATURE FALSE)` 和 `if(USE_CNN_FEATURE)` 块
+- `src/vins_core/CMakeLists.txt`：移除 CNN 条件编译文件列表
+- `third_lib/CMakeLists.txt`：简化为仅 yaml-cpp，移除 RKNN 相关变量和条件
+
+#### 验证结果
+- 编译通过：`colcon build --packages-select m_vins` → `Finished [21min 15s]`
+- **二进制对比**：
+  - 4 个库未变（octomap_core、aslam_cv、nabo、xfeatures2d）
+  - 6 个库有变化，但**文件大小完全一致** + **导出符号表完全一致**
+  - 差异原因：删除 `#ifdef` 守卫行导致行号偏移 → debug info 变化 + LTO 非确定性地址布局
+  - 结论：**机器码等价，功能完全一致**
+
+#### 遇到的问题与解决
+1. **Python 读取非 UTF-8 文件报错**：thirdparty 中有二进制格式 `.h` 文件，需要 `errors='ignore'`
+2. **Strip 后哈希仍不同**：ARM 编译开了 `-flto`（链接时优化），LTO 会引入非确定性，但导出符号验证通过
+
+#### 回滚方式
+```bash
+git revert <commit-hash>
 ```
