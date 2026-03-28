@@ -17,7 +17,6 @@ set(SOURCE_FILES
         src/loop_detector/pnp.cc
         src/loop_interface/loop_setting.cc
         src/loop_interface/scan_loop_interface.cc
-        src/loop_interface/visual_loop_interface.cc
         src/loop_index/index_interface.cc
         src/loop_index/inverted_multi_index_interface.cc
         src/loop_index/inverted_multi_index.cc

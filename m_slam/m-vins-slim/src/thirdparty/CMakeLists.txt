@@ -16,13 +16,8 @@ include_directories(
 
 include_directories(
     ${PROJECT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/aslam_cv2/aslam_cv_cameras/include
-    ${PROJECT_SOURCE_DIR}/aslam_cv2/aslam_cv_common/include
-    ${PROJECT_SOURCE_DIR}/libnabo
+            ${PROJECT_SOURCE_DIR}/libnabo
     ${PROJECT_SOURCE_DIR}/minkindr/minkindr/include
-    ${PROJECT_SOURCE_DIR}/xfeatures2d/include
-)
+    )
 
-add_subdirectory(aslam_cv2)
 add_subdirectory(libnabo)
-add_subdirectory(xfeatures2d)

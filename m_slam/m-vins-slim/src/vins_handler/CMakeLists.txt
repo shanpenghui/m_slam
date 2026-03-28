@@ -31,7 +31,6 @@ set_target_properties(vins_handler_${CMAKE_SYSTEM_PROCESSOR} PROPERTIES
         VERSION ${CMAKE_PROJECT_VERSION})
 
 target_link_libraries(vins_handler_${CMAKE_SYSTEM_PROCESSOR}
-    aslam_cv
     loop_closure
     vins_core
     octomap_core

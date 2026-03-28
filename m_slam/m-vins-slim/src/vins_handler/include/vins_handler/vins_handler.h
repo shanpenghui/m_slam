@@ -21,12 +21,9 @@
 #include <vector>
 #include <deque>
 
-#include "feature_tracker/depth_estimator.h"
-#include "feature_tracker/gyro_tracker.h"
 #include "hybrid_optimizer/hybrid_optimizer.h"
 #include "log_common/logging_tools.h"
 #include "loop_interface/scan_loop_interface.h"
-#include "loop_interface/visual_loop_interface.h"
 #include "occ_common/laser_line_detector.h"
 #include "occ_common/live_submaps.h"
 #include "octomap_core/octo_interface.h"
@@ -58,11 +55,7 @@ public:
     void PoseGraphThread();
     void RelocInitThread();
     void VocTrainingThread();
-    void FeatureTrackingTestThread();
 
-    void AddImage(const common::ImageData& img_data);
-    void AddDepth(const common::DepthData& depth_data);
-    void AddImu(const common::ImuData& imu_meas);
     void AddOdom(const common::OdomData& odom_meas);
     void AddScan(const common::SensorDataConstPtr scan_meas);
     void AddGroundTruth(const common::OdomData& gt);
@@ -109,12 +102,7 @@ private:
                       std::mutex* mutex_ptr,
                       SensorType* get_data_ptr);
     template <typename SensorType>
-    bool FindSyncCameraData(const uint64_t time_query_ns,
-                            const double time_diff_threshold_s,
-                            std::deque<SensorType>* sensor_buffer_ptr,
-                            SensorType* find_data_ptr);
     void SyncSensorData();
-    void CollectImageDataOnly();
     bool EnoughMotionCheck(const common::State& prev_state,
                              const common::State& curr_state);
     template <typename DataType>
@@ -240,9 +228,7 @@ private:
 
     std::unique_ptr<vins_core::MotionChecker> motion_checker_ptr_;
 
-    std::unique_ptr<vins_core::FeatureTrackerBase> feature_tracker_ptr_;
 
-    std::unique_ptr<vins_core::DepthEstimator> depth_estimator_ptr_;
 
     std::unique_ptr<vins_core::HybridOptimizer> hybrid_optimizer_ptr_;
 
@@ -254,7 +240,6 @@ private:
 
     std::unique_ptr<loop_closure::ScanLoopInterface> scan_loop_interface_ptr_;
 
-    std::unique_ptr<loop_closure::VisualLoopInterface> visual_loop_interface_ptr_;
 
     std::unique_ptr<vins_handler::SlamStateMonitor> slam_state_monitor_ptr_;
 

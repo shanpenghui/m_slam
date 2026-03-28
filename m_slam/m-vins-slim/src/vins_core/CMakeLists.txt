@@ -25,15 +25,7 @@ set(SOURCE_FILES
         src/cost_function/schur_complement_problem.cc
         src/cost_function/switch_prior_cost.cc
         src/cost_function/zero_velocity_cost.cc
-        src/feature_tracker/delaunay_mesher.cc
-        src/feature_tracker/feature_detector.cc
-        src/feature_tracker/feature_extractor.cc
-        src/feature_tracker/feature_tracker_base.cc
-        src/feature_tracker/depth_estimator.cc
-        src/feature_tracker/gyro_tracker.cc
-        src/feature_tracker/gyro_two_frame_matcher.cc
-        src/feature_tracker/reprojection_checker.cc
-        src/hybrid_optimizer/hybrid_optimizer.cc
+                                                                        src/hybrid_optimizer/hybrid_optimizer.cc
         src/sensor_propagator/imu_propagator.cc
         src/sensor_propagator/motion_checker.cc
         src/sensor_propagator/odom_propagator.cc
@@ -43,7 +35,7 @@ set(SOURCE_FILES
 if(USE_CNN_FEATURE)
         set(SOURCE_FILES
             ${SOURCE_FILES}
-            src/feature_tracker/super_point_infer.cc)
+            
 endif()
 
 add_library(vins_core_${CMAKE_SYSTEM_PROCESSOR} SHARED
@@ -57,9 +49,7 @@ set_target_properties(vins_core_${CMAKE_SYSTEM_PROCESSOR} PROPERTIES
         VERSION ${CMAKE_PROJECT_VERSION})
 
 target_link_libraries(vins_core_${CMAKE_SYSTEM_PROCESSOR}
-    aslam_cv
     nabo
-    xfeatures2d
     ${THIRD_LIB_LIBRARIES}
     ${OpenCV_LIBS}
     )

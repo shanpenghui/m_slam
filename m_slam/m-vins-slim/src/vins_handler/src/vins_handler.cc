@@ -4,9 +4,6 @@
 #include <omp.h>
 #include <opencv2/opencv.hpp>
 
-#include "feature_tracker/depth_estimator.h"
-#include "feature_tracker/gyro_tracker.h"
-#include "feature_tracker/reprojection_checker.h"
 #include "flann_common/nano_flann.hpp"
 #include "flann_common/pointcloud.h"
 #include "time_common/time.h"
@@ -99,7 +96,6 @@ VinsHandler::VinsHandler(const common::SlamConfigPtr& slam_config,
         depth_estimator_ptr_.reset(
                     new vins_core::DepthEstimator(depth_estimator_options));
 
-        visual_loop_interface_ptr_.reset(
                     new loop_closure::VisualLoopInterface(cameras_, config_));
     }
 
@@ -139,9 +135,6 @@ VinsHandler::VinsHandler(const common::SlamConfigPtr& slam_config,
                 *(live_global_submaps_ptr_->submaps().front()->grid()), 7));
             reloc_ = true;
         }
-        if (summary_map_ptr != nullptr && visual_loop_interface_ptr_ != nullptr) {
-            visual_loop_interface_ptr_->LoadSummaryMap(summary_map_ptr);
-            map_cloud_ = visual_loop_interface_ptr_->GetMapClouds();
             reloc_ = true;
         }
         if (octree_map_ptr != nullptr) {
@@ -1009,7 +1002,6 @@ double VinsHandler::TrackFeature(const common::SyncedHybridSensorData& hybrid_da
                  visual_frame_data_kp1.descriptors.cols());
         if (config_->mapping || reloc_) {
             // Project Uint8 descriptors into Float32.
-            visual_loop_interface_ptr_->ProjectDescriptors(visual_frame_data_kp1.descriptors,
                                                            &visual_frame_data_kp1.projected_descriptors);
             CHECK_EQ(visual_frame_data_kp1.descriptors.cols(),
                      visual_frame_data_kp1.projected_descriptors.cols());
@@ -1739,7 +1731,6 @@ void VinsHandler::LoopQuery(loop_closure::LoopCandidate* candidate_ptr) {
             loop_matches_ptr.reset(new loop_closure::VertexKeyPointToStructureMatchList);
         }
 
-        loop_success = visual_loop_interface_ptr_->Query(key_frame.visual_datas, T_GtoM_,
                                                          &loop_result, loop_matches_ptr.get());
 
         if (loop_success) {
@@ -1913,7 +1904,6 @@ void VinsHandler::TryInitRelocWithPrior() {
         this_keyframe_type == common::KeyFrameType::ScanAndVisual) {
         VLOG(0) << "Get new visual keyframe, try init reloc with prior.";
         loop_result.visual_loop_type = loop_closure::VisualLoopType::kMapTracking;
-        if (visual_loop_interface_ptr_->Query(this_keyframe.visual_datas,
                                               *T_GtoM_prior_ptr_,
                                               &loop_result,
                                               nullptr)) {

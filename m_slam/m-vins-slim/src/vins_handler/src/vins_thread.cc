@@ -475,7 +475,6 @@ void VinsHandler::BackendThread() {
                     this_keyframe_type == common::KeyFrameType::Visual)) {    
                     // Insert frame data into loop interface.
                     TIME_TIC(INSERT_LOOP_DATA);
-                    visual_loop_interface_ptr_->InsertFrameData(key_frames_,
                                                                 key_frames_.back().visual_datas,
                                                                 features_);
                     TIME_TOC(INSERT_LOOP_DATA);
@@ -687,7 +686,6 @@ void VinsHandler::VocTrainingThread() {
                                                 hybrid_data.img_data.images[0],
                                                 &visual_frame_data,
                                                 &track_id_provider_);
-            visual_loop_interface_ptr_->ProjectDescriptors(visual_frame_data.descriptors,
                                                            &visual_frame_data.projected_descriptors);
 #endif
 
@@ -787,7 +785,6 @@ void VinsHandler::FeatureTrackingTestThread() {
                                                 hybrid_data.img_data.images[0],
                                                 &visual_frame_data_kp1,
                                                 &track_id_provider_);
-            visual_loop_interface_ptr_->ProjectDescriptors(visual_frame_data_kp1.descriptors,
                                                            &visual_frame_data_kp1.projected_descriptors);
 #endif
             VLOG(0) << "Detected keypoints size: " << visual_frame_data_kp1.key_points.cols()
